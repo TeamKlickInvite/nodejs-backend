@@ -18,8 +18,10 @@ import router from './routes/template.routes.js';
 //  import userRouter from './routes/user.routes.js'
 //  // routed declartion:
 // app.use("/api/v1/users",userRouter)
-app.use('/api/v1/users', router);
-
+ app.use('/api/v1/users', router);
+// app.get('/test', (req, res) => {
+//   res.send('API is working 🚀');
+// });
 
 
 export default app

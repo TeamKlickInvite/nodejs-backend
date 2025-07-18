@@ -9,7 +9,7 @@ import  app  from "./app.js"
 
 connectDB()
 .then( () =>{
-    app.listen(3000 , '0.0.0.0',() => {
+    app.listen(4000 , '0.0.0.0',() => {
         console.log(`server is running at ${process.env.PORT} `)
     })
 })

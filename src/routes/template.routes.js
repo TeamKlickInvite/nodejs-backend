@@ -1,17 +1,17 @@
 import { Router } from "express";
-import { verifyToken } from "../middlewares/verify.middleware.js";
-import {uploadTemplate,createBlock,saveCard,getAllTemplates,filterTemplates,getTemplateDetails,exportCard} from '../controllers/template.controller.js'
+// import { verifyToken } from "../middlewares/verify.middleware.js";
+import {uploadTemplate,getAllTemplates,filterTemplates} from '../controllers/template.controller.js'
 import { uploadTemplateAssets,uploadCardAssets} from "../middlewares/multer.middleware.js";
 
 
 const router = Router();
 router.post('/uploadTemplate', uploadTemplateAssets, uploadTemplate);
-router.post('/create', createBlock)
-router.post('/saveCard', uploadCardAssets, saveCard);
+// router.post('/create', createBlock)
+// router.post('/saveCard', uploadCardAssets, saveCard);
 router.get('/getAllTemplates',getAllTemplates)
 router.get('/filterTemplates',filterTemplates)
-router.get('/templates/:templateId/details', getTemplateDetails);
-router.get('/export/:cardId',exportCard)
+// router.get('/templates/:templateId/details', getTemplateDetails);
+// router.get('/export', exportCard);
 // router.post('/uploadBlockImage', uploadBlockImageMulter, uploadBlockImage);
  
 // router.post('/export', exportRenderedTemplate);
