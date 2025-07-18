@@ -122,6 +122,6 @@ export const filterTemplates = async (req, res) => {
     res.status(200).json({ templates });
   } catch (err) {
     console.error('❌ Error filtering templates:', err);
-    res.status(500).json({ error: 'Failed to filter templates' });
+    res.status(500).json({ error: 'failed to filter all template' });
   }
 };
