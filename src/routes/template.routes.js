@@ -15,7 +15,7 @@ router.post('/uploadTemplate', uploadTemplateAssets, uploadTemplate);
 // router.get('/getUserCustomizations/:user_id',getUserCustomizations)
 // router.post('/create', createBlock)
 // router.post('/saveCard', uploadCardAssets, saveCard);
-router.get('/getTemplates',getAllTemplates)
+router.get('/getAllTemplates',getAllTemplates)
 router.get('/filterTemplates',filterTemplates)
 // router.get('/templates/:templateId/details', getTemplateDetails);
 // router.get('/export', exportCard);
