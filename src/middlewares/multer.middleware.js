@@ -21,7 +21,7 @@ export const uploadTemplateAssets = multer({ storage }).fields([
 
 
 // For saving/editing cards: upload up to 5 images for image blocks
-export const uploadCardAssets = multer({ storage }).array('images', 5);
+// export const uploadCardAssets = multer({ storage }).array('images', 5);
 
 // Optional: single block image upload
 // export const uploadBlockImageMulter = multer({ storage }).single('blockImage');

@@ -136,7 +136,7 @@ const rsvpResponseSchema = new Schema({
   eventId: Number,
   responses: {
     attendance: { type: Number, enum: [0, 1, 2] },
-    accompanyingPersons: Number,
+    accompanyingPersons: Number,  
     foodPreference: { type: Number, enum: [1, 2] },
     arrivalDateTime: Date
   },
@@ -147,7 +147,7 @@ const rsvpResponseSchema = new Schema({
 guestGroupRelationSchema.index({ uniqueUrl: 1 });
 inviteLogSchema.index({ guestId: 1, orderId: 1, medium: 1, type: 1 });
 inviteOpenLogSchema.index({ guestId: 1, orderId: 1 });
-guestSchema.index({ hostId: 1 });
+guestSchema.index({ hostId: 1 }); 
 orderSchema.index({ hostId: 1 });
 groupSchema.index({ orderId: 1 });
 

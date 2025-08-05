@@ -1,13 +1,10 @@
 // utils/injectHtml.js
 import * as cheerio from 'cheerio';
-
 export const injectHtml = (baseHtml, layoutData) => {
   const $ = cheerio.load(baseHtml);
-
   if (layoutData.backgroundImageUrl) {
     baseHtml = baseHtml.replace(/{{backgroundImageUrl}}/g, layoutData.backgroundImageUrl);
   }
-
   // Inject textual data
   if (layoutData?.data) {
     Object.entries(layoutData.data).forEach(([key, value]) => {
@@ -16,14 +13,9 @@ export const injectHtml = (baseHtml, layoutData) => {
       });
     });
   }
-
   // ✅ Replace background image placeholder manually
-  
-
   return $.html();
 };
-
-
 
 // export const injectHtml = (baseHtml, layoutData, blockDefs) => {
 //   // ✅ 1. Inject global placeholders into baseHtml
@@ -33,18 +25,16 @@ export const injectHtml = (baseHtml, layoutData) => {
 //       baseHtml = baseHtml.replace(regex, layoutData.data[key]);
 //     }
 //   }
-
 //   // ✅ 2. Construct all block HTML and inject into {{blocks}}
 //   let blocksHtml = '';
 //   if (Array.isArray(layoutData.blocks)) {
-//     layoutData.blocks.forEach(block => {
-//       const blockDef = blockDefs.find(b => b._id.toString() === block.blockId);
-//       if (blockDef) {
-//         let html = blockDef.html;
-          
-//         // Replace placeholders inside block HTML
-//         for (const key in block.content) {
-//           const regex = new RegExp(`{{${key}}}`, 'g'); 
+//  layoutData.blocks.forEach(block => {
+//  const blockDef = blockDefs.find(b => b._id.toString() === block.blockId);
+//  if (blockDef) {
+//  let html = blockDef.html;      
+//  //Replace placeholders inside block HTML
+//  for (const key in block.content) {
+//     const regex = new RegExp(`{{${key}}}`, 'g'); 
 //           html = html.replace(regex, block.content[key]);
 //         }
 
@@ -57,9 +47,7 @@ export const injectHtml = (baseHtml, layoutData) => {
 //       }
 //     });
 //   }
-
 //   // ✅ 3. Inject blocks into the base HTML
 //   baseHtml = baseHtml.replace('{{blocks}}', blocksHtml);
-
 //   return baseHtml;
 // };

@@ -21,7 +21,7 @@ export const uploadTemplate = async (req, res) => {
                             // Input validation schema using Joi
     const schema = Joi.object({
       title: Joi.string().trim().min(3).max(100).required().messages({
-        "string.base": "Title must be a string",
+        "string.base": "Tittle must be String",
         "string.empty": "Title is required",
         "string.min": "Title must be at least 3 characters long",
         "string.max": "Title must not exceed 100 characters",
@@ -43,9 +43,7 @@ export const uploadTemplate = async (req, res) => {
     if (error) {
       return res.status(400).json({ success: false, message: error.details[0].message });
     }
-
-
-                          // Check required files
+                          // Check required files   
     if (!previewImageFile || !backgroundImageFile || !htmlFile) {
       return res.status(400).json({ success: false, message: "Missing required files (previewImage, backgroundImage, or html)" });
     }
@@ -112,7 +110,6 @@ export const getAllTemplates = async (req, res) => {
 export const filterTemplates = async (req, res) => {
   try {
     const { category, title } = req.query;
-
     const filter = {};
     if (category) filter.category = category;
     if (title) filter.title = new RegExp(title, 'i'); // case-insensitive  
