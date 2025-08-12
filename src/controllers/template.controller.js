@@ -5,14 +5,12 @@ import * as fs from "fs/promises"; // Use promises for async file operations
 import Joi from "joi"; // Import Joi for validation
 import { unlink } from "fs/promises"; // For deleting temporary files
 import * as cheerio from "cheerio"; 
-
 export const uploadTemplate = async (req, res) => {
   try {
                              // Ensure user is authenticated
     // if (!req.user || !req.user.id) {
-    //   return res.status(401).json({ success: false, message: "Unauthorized: User not authenticated" });
+    //   return res.status(401).json({ success: false, message: "Unauthorized: User not authenticated" });        
     // }
-
     const { title, category, blockTypesAllowed } = req.body;
     const previewImageFile = req.files?.previewImage?.[0];
     const backgroundImageFile = req.files?.backgroundImage?.[0];
@@ -37,7 +35,6 @@ export const uploadTemplate = async (req, res) => {
         "string.empty": "blockTypesAllowed is required",
       }),
     });
-
                               // Validate input
     const { error } = schema.validate({ title, category, blockTypesAllowed });
     if (error) {
@@ -67,7 +64,7 @@ export const uploadTemplate = async (req, res) => {
     ]);
 
                       // Read HTML file asynchronously
-    const baseHtml = await fs.readFile(htmlFile.path, "utf8");
+    const baseHtml = await fs.readFile(htmlFile.path, "utf8");  
 
                       // Create and save Template
     const newTemplate = new Template({
@@ -78,16 +75,13 @@ export const uploadTemplate = async (req, res) => {
       backgroundImageUrl: backgroundImageResult.secure_url,
       blockTypesAllowed: parsedBlockTypesAllowed
     });
-
-    await newTemplate.save();
-
+    await newTemplate.save(); 
                        // Clean up temporary files
     await Promise.all([
       unlink(previewImageFile.path).catch((err) => console.warn("Failed to delete previewImage file:", err.message)),
       unlink(backgroundImageFile.path).catch((err) => console.warn("Failed to delete backgroundImage file:", err.message)),
       unlink(htmlFile.path).catch((err) => console.warn("Failed to delete html file:", err.message)),
     ]);
-
     return res.status(201).json({ success: true, template: newTemplate });
   } catch (err) {
     console.error("❌ Template upload failed:", err);

@@ -20,7 +20,7 @@ import router from './routes/template.routes.js';
 // app.use("/api/v1/users",userRouter)
  app.use('/api/v1/users', router);
 // app.get('/test', (req, res) => {
-//   res.send('API is working 🚀');
+//   res.send('API is working 🚀');    ``
 // });
 
 

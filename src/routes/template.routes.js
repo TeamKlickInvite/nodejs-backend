@@ -3,14 +3,14 @@ import { Router } from "express";
 import {uploadTemplate,getAllTemplates,filterTemplates} from '../controllers/template.controller.js'
 import { uploadTemplateAssets} from "../middlewares/multer.middleware.js";
 // import { uploadTemplate, getAllTemplates,filterTemplates } from "../controllers/template.controller.js";
-// import { uploadTemplateAsset } from "../middlewares/uploadTemplateAssets.middleware.js";
-// import createTemplate  from "../controllers/NewTemplate.controller.js"
+import { uploadTemplateAsset } from "../middlewares/uploadTemplateAssets.middleware.js";
+ import createTemplate  from "../controllers/NewTemplate.controller.js"
 // import { saveCustomization,getUserCustomizations } from "../controllers/NewTemplate.controller.js"
 
 
 const router = Router();
 router.post('/uploadTemplate', uploadTemplateAssets, uploadTemplate);
-// router.post('/createTemplate', uploadTemplateAsset, createTemplate);
+ router.post('/createTemplate', uploadTemplateAsset, createTemplate);
 // router.post('/saveCustomization',saveCustomization)
 // router.get('/getUserCustomizations/:user_id',getUserCustomizations)
 // router.post('/create', createBlock)

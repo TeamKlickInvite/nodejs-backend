@@ -1,6 +1,7 @@
 # custom
 public/temp/
-exports/
+public/temp/
+exports/uploads/
 
 # Logs
 logs
