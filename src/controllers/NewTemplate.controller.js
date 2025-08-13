@@ -48,6 +48,41 @@ const createTemplate = async (req, res) => {
   }
 };
 
+
+export const getTemplateById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate ID
+    if (!id) {
+      return res.status(400).json({ message: 'Template ID is required!' });
+    }
+
+    // Fetch template from DB
+    const template = await NewTemplate.findById(id);
+    if (!template) {
+      return res.status(404).json({ message: 'Template not found' });
+    }
+
+    // Return template data
+    res.status(200).json({
+      templateId: template._id,
+      backgroundUrl: template.bimage_url, // background image URL
+      thumbnailUrl: template.pimage_url,  // preview/thumbnail image URL
+      fields: template.text_fields        // array of text fields
+    });
+
+  } catch (error) {
+    console.error('Error in getTemplateById:', error);
+    res.status(500).json({
+      message: 'Error retrieving template',
+      error: error.message
+    });
+  }
+};
+
+
+
 export const saveCustomization = async (req, res) => {
   try {
     const { template_id, user_id, user_inputs } = req.body;
