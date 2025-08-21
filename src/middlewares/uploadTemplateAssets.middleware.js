@@ -36,3 +36,21 @@ export const uploadTemplateAsset = multer({
   { name: 'backgroundImage', maxCount: 1 } // For pimage
   // { name: 'backgroundImage', maxCount: 1 }, // For bimage
 ]);
+
+export const SaveTemplateAsset = multer({
+  storage: storage,
+  limits: { fileSize: 5000000 }, // Limit to 5MB per file
+  fileFilter: (req, file, cb) => {
+    const fileTypes = /jpeg|jpg|png/;
+    const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = fileTypes.test(file.mimetype);
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Error: Only JPEG, JPG, or PNG images are allowed!'));
+    }
+  },
+}).fields([
+  { name: 'SaveImage', maxCount: 1 } // For pimage
+  // { name: 'backgroundImage', maxCount: 1 }, // For bimage
+]);

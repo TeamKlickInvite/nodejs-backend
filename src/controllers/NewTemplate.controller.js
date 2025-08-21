@@ -3,6 +3,32 @@ import cloudinary from "../utils/cloudnary.js";
 import path from 'path';
 import Customization from "../models/saveCustomization.models.js";
 
+
+// const crateTemplate = async(req,res) =>{
+//   try {
+//     if(!raw.files || req.files.prewImage || !req.files.backgrounImage){
+//       return res.status(404).json({message:"both previewImage and backgroundImage are required"})
+//     }
+//     const {previewImage, backgroundImage} = req.files;
+//     const{tittle, category, text_fields} = req.body;
+//     console
+
+//     // Validate required field:
+//      if(!tittle || !category || !text_fields){
+//       return res.status(404).json({message:"all fields must be required"})
+//      }
+
+//      // Uploading previewImage and background to the cloudinary:
+//      const pimageUpload = await cloudinary.uploader.upload(previewImage[0].path,{
+//        public_id:' 
+//      })
+
+    
+//   } catch (error) {
+    
+//   }
+// }
+
 const createTemplate = async (req, res) => {
   try {
     // Check if files are uploaded
@@ -11,17 +37,22 @@ const createTemplate = async (req, res) => {
     }
     const { previewImage, backgroundImage } = req.files;
     const { title, category, text_fields } = req.body;
+    console.log(previewImage);
+    console.log(backgroundImage)
 
     // Validate required fields
     if (!title || !category || !text_fields) {
       return res.status(400).json({ message: 'Title, category, and text fields are required!' });
-    }
+    }  
+     
     // Upload preview image to Cloudinary
     const pimageUpload = await cloudinary.uploader.upload(previewImage[0].path, {
       public_id: `templates/${path.parse(previewImage[0].filename).name}`,
     });
+    console.log(pimageUpload)
 
     const pimage_url = pimageUpload.secure_url;
+
     // Upload background image to Cloudinary
     const bimageUpload = await cloudinary.uploader.upload(backgroundImage[0].path, {
       public_id: `templates/${path.parse(backgroundImage[0].filename).name}`,
@@ -48,7 +79,6 @@ const createTemplate = async (req, res) => {
   }
 };
 
-
 export const getTemplateById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -63,6 +93,7 @@ export const getTemplateById = async (req, res) => {
     if (!template) {
       return res.status(404).json({ message: 'Template not found' });
     }
+    
 
     // Return template data
     res.status(200).json({
@@ -82,44 +113,33 @@ export const getTemplateById = async (req, res) => {
 };
 
 
-
 export const saveCustomization = async (req, res) => {
   try {
-    const { template_id, user_id, user_inputs } = req.body;
+    console.log('Received files:', req.files); // debug line
 
-    // Validation
-    if (!template_id || !user_id || !user_inputs) {
-      return res.status(400).json({ message: 'Template ID, user ID, and user inputs are required!' });
+    // check file present
+    const saveFiles = req.files?.SaveImage;
+    if (!saveFiles || saveFiles.length === 0) {
+      return res.status(400).json({ message: 'SaveImage file is required (field name: SaveImage).' });
     }
 
-    // Fetch template
-    const template = await NewTemplate.findById(template_id);
-    if (!template) {
-      return res.status(404).json({ message: 'Template not found' });
+    const saveFile = saveFiles[0];
+    const { template_id } = req.body;
+    if (!template_id) {
+      return res.status(400).json({ message: 'Template ID is required!' });
     }
 
-    // Generate Cloudinary transformation overlays
-    const transformations = template.text_fields.map(field => {
-      const text = encodeURIComponent(user_inputs[field.label] || field.default_text || '');
-      const font = field.font || 'Arial';
-      const size = field.size || 20;
-      const style = field.style || ''; // e.g., bold
-      const x = field.x || 0;
-      const y = field.y || 0;
-      const color = (field.color || '000000').replace(/^#/, ''); // remove "#" if present
-      return `l_text:${font}_${size}_${style}:${text},co_rgb:${color},x_${x},y_${y},g_north_west,fl_layer_apply`;
-    }).join('/');
+    // upload to cloudinary
+    const uploadResult = await cloudinary.uploader.upload(saveFile.path, {
+      public_id: `templates/${path.parse(saveFile.filename).name}`,
+    });
 
-    // Build Cloudinary URL
-    const [baseUrl, afterUpload] = template.bimage_url.split('/upload/');
-    const generated_image_url = `${baseUrl}/upload/${transformations}/${afterUpload}`;
+    const savecard = uploadResult.secure_url;
 
-    // Save customization to DB
+    // Save to DB
     const customization = new Customization({
       template_id,
-      user_id,
-      user_inputs,
-      generated_image_url,
+      savecard,
     });
     const savedCustomization = await customization.save();
 
@@ -127,12 +147,11 @@ export const saveCustomization = async (req, res) => {
       message: 'Customization saved successfully',
       customization: savedCustomization,
     });
-
   } catch (error) {
     console.error('Error in saveCustomization:', error);
     res.status(500).json({
       message: 'Error saving customization',
-      error: error.message
+      error: error.message,
     });
   }
 };

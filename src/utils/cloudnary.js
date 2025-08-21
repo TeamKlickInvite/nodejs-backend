@@ -8,6 +8,7 @@ cloudinary.config({
 export default cloudinary;
 
 // import fs from 'fs'
+
 // import { v2 as cloudinary} from "cloudinary"
 // import { response } from 'express';
 //  // Configuration

@@ -39,7 +39,7 @@ const hostSchema = new Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const guestSchema = new Schema({
+const guestSchema = new Schema({//
   hostId: { type: Schema.Types.ObjectId, ref: 'Host', required: true },
   name: { type: String, required: true },
   displayName: String,
@@ -64,7 +64,7 @@ const orderSchema = new Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const groupSchema = new Schema({
+const groupSchema = new Schema({//
   orderId: { type: Schema.Types.ObjectId, ref: 'Order', required: true },
   name: { type: String, required: true },
   category: { type: Number, enum: [1, 2, 3] }, // 1: family, 2: friends, 3: coworker
@@ -80,7 +80,7 @@ const groupSchema = new Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const guestGroupRelationSchema = new Schema({
+const guestGroupRelationSchema = new Schema({//
   guestId: { type: Schema.Types.ObjectId, ref: 'Guest', required: true },
   groupId: { type: Schema.Types.ObjectId, ref: 'Group', required: true },
   uniqueUrl: { type: String, unique: true, default: () => `https://klickinvite.com/invite/${shortid.generate()}` },

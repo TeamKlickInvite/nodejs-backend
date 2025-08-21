@@ -28,6 +28,7 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.3",
     "puppeteer": "^24.9.0",
+    "shortid": "^2.2.17",
     "twilio": "^5.6.1"
   }
 }

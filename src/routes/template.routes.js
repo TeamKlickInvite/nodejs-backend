@@ -3,16 +3,24 @@ import { Router } from "express";
 import {uploadTemplate,getAllTemplates,filterTemplates} from '../controllers/template.controller.js'
 import { uploadTemplateAssets} from "../middlewares/multer.middleware.js";
 // import { uploadTemplate, getAllTemplates,filterTemplates } from "../controllers/template.controller.js";
-import { uploadTemplateAsset } from "../middlewares/uploadTemplateAssets.middleware.js";
+import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemplateAssets.middleware.js";
  import createTemplate ,{ getTemplateById}  from "../controllers/NewTemplate.controller.js"
-// import { saveCustomization,getUserCustomizations } from "../controllers/NewTemplate.controller.js"
+ import { saveCustomization} from "../controllers/NewTemplate.controller.js"
+ import { addGuest,updateGuest,deleteGuest } from "../controllers/GuestBook.controller.js"
+import { createGroup } from "../controllers/GuestGroup.controller.js";
+import {addGuestsToGroup} from '../controllers/GuestGroupRelation.controller.js'
 
 
 const router = Router();
 router.post('/uploadTemplate', uploadTemplateAssets, uploadTemplate);
  router.post('/createTemplate', uploadTemplateAsset, createTemplate);
 router.get('/getTemplateById/:id',getTemplateById)
-// router.post('/saveCustomization',saveCustomization)
+router.post('/saveCustomization',SaveTemplateAsset,saveCustomization)
+router.post('/addGuest',addGuest)
+router.delete('/deleteGuest/:guest_id',deleteGuest)
+router.put('/updateGuest/:guest_id',updateGuest)
+router.post('/createGroup',createGroup)
+router.post('/addGuestsToGroup',addGuestsToGroup)
 // router.get('/getUserCustomizations/:user_id',getUserCustomizations)
 // router.post('/create', createBlock)
 // router.post('/saveCard', uploadCardAssets, saveCard);
