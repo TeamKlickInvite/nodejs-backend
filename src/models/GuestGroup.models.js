@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const GroupSchema = new mongoose.Schema({
   order_id: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: "Order",
     required: true
   }, // Reference to Order
