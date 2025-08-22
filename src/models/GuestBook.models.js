@@ -23,7 +23,7 @@ const contactSchema = new mongoose.Schema(
 const guestSchema = new mongoose.Schema(
   {
     host_id: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: "Host",
       required: [true, "Host reference is required"],
       index: true, // ✅ faster queries by host

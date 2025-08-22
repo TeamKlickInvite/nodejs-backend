@@ -16,8 +16,6 @@ export const getGroupsByOrder = async (req, res) => {
 export const createGroup = async (req, res) => {
   try {
     const { order_id, name, category } = req.body;
-
-    const newGroup = new Group({ order_id, name, category });
     const schema = Joi.object({
           name: Joi.string().trim().min(3).max(100).required().messages({
             "string.base": "Tittle must be String",
@@ -37,7 +35,9 @@ export const createGroup = async (req, res) => {
         if (error) {
           return res.status(400).json({ success: false, message: error.details[0].message });
         }
-    
+ 
+
+    const newGroup = new Group({ order_id, name, category });
     await newGroup.save();
 
     res.status(201).json({
