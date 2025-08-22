@@ -1,4 +1,5 @@
 import Group from "../models/GuestGroup.models.js"
+import Joi from "joi"
 
 
 export const getGroupsByOrder = async (req, res) => {
@@ -17,6 +18,25 @@ export const createGroup = async (req, res) => {
     const { order_id, name, category } = req.body;
 
     const newGroup = new Group({ order_id, name, category });
+    const schema = Joi.object({
+          name: Joi.string().trim().min(3).max(100).required().messages({
+            "string.base": "Tittle must be String",
+            "string.empty": "Title is required",
+            "string.min": "Title must be at least 3 characters long",
+            "string.max": "Title must not exceed 100 characters",
+          }),
+          category: Joi.string().trim().min(3).max(50).required().messages({
+            "string.base": "Category must be a string",
+            "string.empty": "Category is required",
+            "string.min": "Category must be at least 3 characters long",
+            "string.max": "Category must not exceed 50 characters",
+          })
+        });
+                                  // Validate input
+        const { error } = schema.validate({ name, category });
+        if (error) {
+          return res.status(400).json({ success: false, message: error.details[0].message });
+        }
     
     await newGroup.save();
 

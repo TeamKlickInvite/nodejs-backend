@@ -7,7 +7,7 @@ import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemp
  import createTemplate ,{ getTemplateById}  from "../controllers/NewTemplate.controller.js"
  import { saveCustomization} from "../controllers/NewTemplate.controller.js"
  import { addGuest,updateGuest,deleteGuest } from "../controllers/GuestBook.controller.js"
-import { createGroup } from "../controllers/GuestGroup.controller.js";
+import { createGroup,getGroupsByOrder} from "../controllers/GuestGroup.controller.js";
 import {addGuestsToGroup} from '../controllers/GuestGroupRelation.controller.js'
 
 
@@ -21,6 +21,7 @@ router.delete('/deleteGuest/:guest_id',deleteGuest)
 router.put('/updateGuest/:guest_id',updateGuest)
 router.post('/createGroup',createGroup)
 router.post('/addGuestsToGroup',addGuestsToGroup)
+router.get("/getGroupsByOrder/:order_id",getGroupsByOrder)
 // router.get('/getUserCustomizations/:user_id',getUserCustomizations)
 // router.post('/create', createBlock)
 // router.post('/saveCard', uploadCardAssets, saveCard);
