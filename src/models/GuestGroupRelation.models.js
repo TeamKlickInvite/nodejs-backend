@@ -9,22 +9,22 @@ const InviteStatusSchema = new mongoose.Schema({
 const GuestGroupRelationSchema = new mongoose.Schema({
   guest_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Guest', required: true },
   group_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true },
-  order_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
+  order_id: { type: String, required: true },
 
-  // uniqueUrl: { 
-  //   type: String, 
-  //   default: () => `https://klickinvite.com/invite/${shortid.generate()}`
-  // },
+  uniqueUrl: { 
+    type: String, 
+    default: () => `https://klickinvite.com/invite/${shortid.generate()}`
+  },
 
-  // inviteStatus: {
-  //   preInvite: { type: InviteStatusSchema, default: () => ({}) },
-  //   invite: { type: InviteStatusSchema, default: () => ({}) },
-  //   reminder: { type: InviteStatusSchema, default: () => ({}) },
-  //   thankyou: { type: InviteStatusSchema, default: () => ({}) }
-  // },
+  inviteStatus: {
+    preInvite: { type: InviteStatusSchema, default: () => ({}) },
+    invite: { type: InviteStatusSchema, default: () => ({}) },
+    reminder: { type: InviteStatusSchema, default: () => ({}) },
+    thankyou: { type: InviteStatusSchema, default: () => ({}) }
+  },
 
-  // views: { type: Number, default: 0 },
-  // maxViewsPerGuest: { type: Number, default: 40 },
+  views: { type: Number, default: 0 },
+  maxViewsPerGuest: { type: Number, default: 40 },
 
   createdAt: { type: Date, default: Date.now }
 });

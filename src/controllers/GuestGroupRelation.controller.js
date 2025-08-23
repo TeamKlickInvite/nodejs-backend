@@ -21,7 +21,7 @@ export const addGuestsToGroup = async (req, res) => {
     }
 
     // Validate IDs quickly
-    const invalid = [group_id, order_id, ...guest_ids].find(id => !mongoose.isValidObjectId(id));
+    const invalid = [group_id,...guest_ids].find(id => !mongoose.isValidObjectId(id));
     if (invalid) {
       return res.status(400).json({ message: `Invalid ObjectId: ${invalid}` });
     }
@@ -50,15 +50,15 @@ export const addGuestsToGroup = async (req, res) => {
     const docs = newGuestIds.map(gid => ({
       guest_id: new mongoose.Types.ObjectId(gid),
       group_id:  new mongoose.Types.ObjectId(group_id),
-      order_id: new mongoose.Types.ObjectId(order_id),
-      // uniqueUrl: `https://klickinvite.com/invite/${shortid.generate()}`,
-      // inviteStatus: {
-      //   preInvite: {},
-      //   invite: {},
-      //   reminder: {},
-      //   thankyou: {}
-      // },
-      // views: 0
+      order_id: order_id,
+      uniqueUrl: `https://klickinvite.com/invite/${shortid.generate()}`,
+      inviteStatus: {
+        preInvite: {},
+        invite: {},
+        reminder: {},
+        thankyou: {}
+      },
+      views: 0
     }));
 
     // 3) Insert with insertMany so Mongoose applies validation and returns documents
