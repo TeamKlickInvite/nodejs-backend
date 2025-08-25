@@ -144,25 +144,27 @@ export const removeGuestFromGroup = async (req, res) => {
 /**
  * Get all Guests in a Group with Group Settings
  */
-export const getGroupGuestsWithSettings = async (req, res) => {
+export const getHostGroupGuests = async (req, res) => {
   try {
-    const { group_id } = req.params;
+    const {  group_id } = req.params;
 
-    const result = await Group.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(group_id) } },
-      {
-        $lookup: {
-          from: "guestgrouprelations",
-          localField: "_id",
-          foreignField: "group_id",
-          as: "relations"
-        }
-      },
-      { $unwind: "$relations" },
+    // if (!mongoose.isValidObjectId(host_id) || !mongoose.isValidObjectId(group_id)) {
+    //   return res.status(400).json({ message: "Invalid host_id or group_id" });
+    // }
+
+    // Step 1: Ensure group belongs to the host
+    const group = await Group.findOne({ _id: group_id });
+    if (!group) {
+      return res.status(404).json({ message: "Group not found for this host" });
+    }
+
+    // Step 2: Lookup all guest relations for that group
+    const result = await GuestGroupRelation.aggregate([
+      { $match: { group_id: new mongoose.Types.ObjectId(group_id) } },
       {
         $lookup: {
           from: "guests",
-          localField: "relations.guest_id",
+          localField: "guest_id",
           foreignField: "_id",
           as: "guest"
         }
@@ -170,19 +172,26 @@ export const getGroupGuestsWithSettings = async (req, res) => {
       { $unwind: "$guest" },
       {
         $project: {
-          group_name: "$name",
-          settings: 1,
+          group_id: 1,
+          order_id: 1,
           guest_id: "$guest._id",
           guest_name: "$guest.name",
           guest_contact: "$guest.contact",
-          invite_status: "$relations.inviteStatus",
-          uniqueUrl: "$relations.uniqueUrl"
+          uniqueUrl: 1,
+          inviteStatus: 1,
+          views: 1
         }
       }
     ]);
 
-    res.json(result);
+    res.json({
+      message: "Guests fetched successfully",
+      group: { id: group._id, name: group.name, settings: group.settings },
+      guestCount: result.length,
+      guests: result
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching group guests", error: error.message });
+    console.error("getHostGroupGuests error:", error);
+    res.status(500).json({ message: "Error fetching host's group guests", error: error.message });
   }
 };

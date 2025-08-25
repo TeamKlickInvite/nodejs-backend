@@ -6,9 +6,9 @@ import { uploadTemplateAssets} from "../middlewares/multer.middleware.js";
 import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemplateAssets.middleware.js";
  import createTemplate ,{ getTemplateById}  from "../controllers/NewTemplate.controller.js"
  import { saveCustomization} from "../controllers/NewTemplate.controller.js"
- import { addGuest,updateGuest,deleteGuest } from "../controllers/GuestBook.controller.js"
+ import { addGuest,updateGuest,deleteGuest,getGuestsByHost} from "../controllers/GuestBook.controller.js"
 import { createGroup,getGroupsByOrder} from "../controllers/GuestGroup.controller.js";
-import {addGuestsToGroup} from '../controllers/GuestGroupRelation.controller.js'
+import {addGuestsToGroup,getHostGroupGuests} from '../controllers/GuestGroupRelation.controller.js'
 
 
 const router = Router();
@@ -22,6 +22,8 @@ router.put('/updateGuest/:guest_id',updateGuest)
 router.post('/createGroup',createGroup)
 router.post('/addGuestsToGroup',addGuestsToGroup)
 router.get("/getGroupsByOrder/:order_id",getGroupsByOrder)
+router.get("/getHostGroupGuests/:group_id",getHostGroupGuests)
+router.get("/getGuestsByHost/:host_id",getGuestsByHost)
 // router.get('/getUserCustomizations/:user_id',getUserCustomizations)
 // router.post('/create', createBlock)
 // router.post('/saveCard', uploadCardAssets, saveCard);
