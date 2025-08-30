@@ -9,6 +9,7 @@ export const getGuestsByHost = async (req, res) => {
     res.status(500).json({ message: 'Error', error: error.message });
   }
 };  
+
 /**
  * Add multiple guests for a host
  * - Ensures proper validation of input
@@ -23,19 +24,20 @@ export const addGuest = async (req, res) => {
     const { host_id, guests } = req.body;
 
     // ====== 1. Basic Input Validation ======
-    // if (!host_id || !mongoose.Types.ObjectId.isValid(host_id)) {
-    //   return res.status(400).json({ 
-    //     success: false, 
-    //     message: "Valid host_id is required" 
-    //   });
-    // }
+    if (!host_id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Valid host_id is required" 
+      });
+    }
+  
 
-    // if (!Array.isArray(guests) || guests.length === 0) {
-    //   return res.status(400).json({ 
-    //     success: false, 
-    //     message: "Guests must be a non-empty array" 
-    //   });
-    // }
+    if (!Array.isArray(guests) || guests.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Guests must be a non-empty array" 
+      });
+    }
 
     // ====== 2. Deep Validation for Each Guest ======
     for (const [index, guest] of guests.entries()) {
@@ -64,21 +66,21 @@ export const addGuest = async (req, res) => {
       }
 
       // Check contacts format
-    //   for (const contact of guest.contacts) {
-    //     if (!["email", "mobile"].includes(contact.type)) {
-    //       return res.status(400).json({
-    //         success: false,
-    //         message: `Invalid contact type "${contact.type}" for guest "${guest.name}"`
-    //       });
-    //     }
-    //     if (!contact.value || typeof contact.value !== "string") {
-    //       return res.status(400).json({
-    //         success: false,
-    //         message: `Contact value is required for guest "${guest.name}"`
-    //       });
-    //     }
-    //   }
+      for (const contact of guest.contacts) {
+      const existingGuest = await Guest.findOne({
+        host_id, 
+        "contacts.type": contact.type,
+        "contacts.value": contact.value
+      });
+
+      if (existingGuest) {
+        return res.status(400).json({
+          success: false,
+          message: `Duplicate contact "${contact.value}" (${contact.type}) already exists for this host`
+        });
+      }
     }
+  }
 
     // ====== 3. Insert Guests ======
     const newGuests = guests.map(guest => ({

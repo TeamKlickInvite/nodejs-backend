@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import GuestGroupRelation from '../models/GuestGroupRelation.models.js';
 import Group from "../models/GuestGroup.models.js"
 import shortid from "shortid";
+import { Guest } from '../models/GuestBook.models.js';
 
 
 /**
@@ -72,7 +73,7 @@ export const addGuestsToGroup = async (req, res) => {
       if (err && err.insertedDocs) {
         inserted = err.insertedDocs;
       } else if (err && err.code === 11000) {
-        // duplicate key — none inserted, but previously existing
+        // duplicate key — none inserted, but previously existing 
         inserted = [];
       } else {
         // validation or other error — bubble up
@@ -96,31 +97,6 @@ export const addGuestsToGroup = async (req, res) => {
     return res.status(500).json({ message: "Error adding guests to group", error: err.message });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-``
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * Remove Guest from Group
@@ -195,3 +171,183 @@ export const getHostGroupGuests = async (req, res) => {
     res.status(500).json({ message: "Error fetching host's group guests", error: error.message });
   }
 };
+
+// controllers/invitationController.js
+import twilio from 'twilio';
+import nodemailer from 'nodemailer';
+
+const twilioClient = twilio(process.env.YOUR_TWILIO_ACCOUNT_SID, process.env.YOUR_TWILIO_AUTH_TOKEN);
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+  }
+});
+
+export const sendInvitation = async (req, res) => {
+  try {
+    const { group_id, guest_ids, medium, message, stage = 'invite' } = req.body; // stage: 'preInvite', 'invite', 'reminder', 'thankyou'
+    if (!group_id || !medium || !message || !['preInvite', 'invite', 'reminder', 'thankyou'].includes(stage)) {
+      return res.status(400).json({ message: 'Invalid input: group_id, medium, message, or stage missing/invalid' });
+    }
+    console.log
+
+    // Fetch relations (bulk for group or specific guests)
+    const query = { group_id };
+    if (guest_ids && Array.isArray(guest_ids)) {
+      query.guest_id = { $in: guest_ids };
+    }
+    const relations = await GuestGroupRelation.find(query);
+    if (!relations.length) {
+      return res.status(404).json({ message: 'No relations found for this group or guests' });
+    }
+
+    const updatedRelations = [];
+    for (const relation of relations) {
+      // Edge case: Already sent (status > 0)
+      if (relation.inviteStatus[stage].status > 0) {
+        updatedRelations.push({ relation_id: relation._id, message: 'Already sent, skipping' });
+        continue;
+      }
+
+      // Update inviteStatus
+      relation.inviteStatus[stage] = {
+        status: 1, // sent
+        medium: medium === 'sms' ? 2 : medium === 'whatsapp' ? 3 : medium === 'email' ? 1 : 0,
+        sentAt: new Date()
+      };
+
+      // Send via medium
+      let sendSuccess = true;
+      try {
+        const guest = await Guest.findById(relation.guest_id);
+        console.log("realtion_Guest",guest);
+        const contact = guest.contacts.find(c => c.type === (medium === 'email' ? 'email' : 'mobile'));
+       console.log("contact_guest",contact);
+        if (!contact) {
+          sendSuccess = false;
+          relation.inviteStatus[stage].status = 0; // revert to pending
+          throw new Error('No contact found for medium');
+        }
+
+        // if (medium === 'sms' || medium === 'whatsapp') {
+        //   await twilioClient.messages.create({
+        //     body: `${message} ${relation.uniqueUrl}`,
+        //     from: medium === 'whatsapp' ? `whatsapp:${process.env.NUMBER}` : process.env.NUMBER,
+        //     to: medium === 'whatsapp' ? `whatsapp:${contact.value}` : `+91${contact.value}`
+        //   });
+         if (medium === 'sms') {
+          await twilioClient.messages.create({
+            body: `${message} ${relation.uniqueUrl}`,
+            from: process.env.NUMBER,
+            to: `+91${contact.value}`
+          });
+        } else if (medium === 'email') {
+          await transporter.sendMail({
+            from: 'shekharara926290@gmail.com.com',
+            to: contact.value,
+            subject: 'KlickInvite Invitation',
+            html: `${message} <a href="${relation.uniqueUrl}">View Invite</a>`
+          });
+        }
+      } catch (sendError) {
+        sendSuccess = false;
+        relation.inviteStatus[stage].status = 0; // revert
+        updatedRelations.push({ relation_id: relation._id, message: 'Sending failed', error: sendError.message });
+      }
+
+      if (sendSuccess) {
+        updatedRelations.push({ relation_id: relation._id, message: 'Sent successfully' });
+      }
+
+      await relation.save();
+    }
+
+    res.json({ message: 'Invitations sent', details: updatedRelations });
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending invitations', error: error.message });
+  }
+};
+
+// Add to invitationController.js or new file
+export const openInvitation = async (req, res) => {
+  try {
+    const { uniqueUrl } = req.params;
+    const relation = await GuestGroupRelation.findOne({ uniqueUrl });
+    if (!relation) {
+      return res.status(404).json({ message: 'Invalid or expired URL' });
+    }
+
+    // Edge case: Max views exceeded
+    if (relation.views >= relation.maxViewsPerGuest) {
+                                                                                                                                                                                                                                                       
+      return res.status(403).json({ message: 'View limit exceeded' });
+    }
+
+    // Update views and status (e.g., to opened if not already)
+    if (relation.inviteStatus.invite.status < 2) {
+      relation.inviteStatus.invite.status = 2; // opened
+      relation.inviteStatus.invite.sentAt = new Date(); // update if needed
+    }
+    relation.views += 1;
+    await relation.save();
+
+    // Fetch related data (guest, group, order)
+    const populatedRelation = await GuestGroupRelation.findOne({ uniqueUrl })
+      .populate('guest_id', 'name contacts') // Get guest details
+      .populate('group_id', 'name settings'); // Get group with settings
+
+    res.json({
+      message: 'Invitation opened',
+      guest: populatedRelation.guest_id,
+      group: populatedRelation.group_id,
+      inviteStatus: populatedRelation.inviteStatus,
+      views: populatedRelation.views
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error opening invitation', error: error.message });
+  }
+};
+
+
+
+
+// // Add to invitationController.js or new file
+// export const openInvitation = async (req, res) => {
+//   try {
+//     const { uniqueUrl } = req.params;
+//     const relation = await GuestGroupRelation.findOne({ uniqueUrl });
+//     if (!relation) {
+//       return res.status(404).json({ message: 'Invalid or expired URL' });
+//     }
+
+//     // Edge case: Max views exceeded
+//     if (relation.views >= relation.maxViewsPerGuest) {
+//       return res.status(403).json({ message: 'View limit exceeded' });
+//     }
+
+//     // Update views and status (e.g., to opened if not already)
+//     if (relation.inviteStatus.invite.status < 2) {
+//       relation.inviteStatus.invite.status = 2; // opened
+//       relation.inviteStatus.invite.sentAt = new Date(); // update if needed
+//     }
+//     relation.views += 1;
+//     await relation.save();
+
+//     // Fetch related data (guest, group, order)
+//     const populatedRelation = await GuestGroupRelation.findOne({ uniqueUrl })
+//       .populate('guest_id', 'name contacts') // Get guest details
+//       .populate('group_id', 'name settings'); // Get group with settings
+
+//     res.json({
+//       message: 'Invitation opened',
+//       guest: populatedRelation.guest_id,
+//       group: populatedRelation.group_id,
+//       inviteStatus: populatedRelation.inviteStatus,
+//       views: populatedRelation.views
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error opening invitation', error: error.message });
+//   }
+// };

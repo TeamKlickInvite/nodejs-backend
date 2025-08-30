@@ -1,18 +1,16 @@
+
 import mongoose from "mongoose";
 
 const GroupSchema = new mongoose.Schema({
-  order_id: {
-    type: String,
-    ref: "Order",
-    required: true
-  }, // Reference to Order
-
+  order_id : {
+    type: String,   // frappe ka order id
+    required: true,
+  },
   name: {
     type: String,
     required: true,
     trim: true
   },
-
   category: {
     type: String, // 1: family, 2: friends, 3: coworker
     required: true
