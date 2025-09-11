@@ -1,4 +1,4 @@
-// File: middlewares/upload.middleware.js
+
 // middleware/multer.js or inside your controller
 import multer from 'multer';
 import path from 'path';
@@ -24,4 +24,4 @@ export const uploadTemplateAssets = multer({ storage }).fields([
 // export const uploadCardAssets = multer({ storage }).array('images', 5);
 
 // Optional: single block image upload
-// export const uploadBlockImageMulter = multer({ storage }).single('blockImage');
+// export const uploadBlockImageMulter = multer({ storage }).single('blockImage

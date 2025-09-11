@@ -6,95 +6,96 @@ import shortid from "shortid";
 import { Guest } from '../models/GuestBook.models.js';
 
 
-/**
- * Add multiple guests to a group for an order.
- * Uses insertMany on Mongoose documents so schema defaults (uniqueUrl, inviteStatus) apply.
- */
 export const addGuestsToGroup = async (req, res) => {
   try {
-    const { guest_ids, group_id, order_id } = req.body;
+    const { guest_ids, group_id, order_id, event_id } = req.body;
 
+    // 1) Basic validation
     if (!Array.isArray(guest_ids) || guest_ids.length === 0) {
       return res.status(400).json({ message: "guest_ids must be a non-empty array" });
     }
-    if (!group_id || !order_id) {
-      return res.status(400).json({ message: "group_id and order_id are required" });
+    if (!group_id || !order_id || !event_id) {
+      return res.status(400).json({ message: "group_id, order_id and event_id are required" });
     }
 
-    // Validate IDs quickly
-    const invalid = [group_id,...guest_ids].find(id => !mongoose.isValidObjectId(id));
+    // 2) Validate only ObjectIds (guest_id & group_id)
+    const invalid = [group_id, ...guest_ids].find(
+      (id) => !mongoose.isValidObjectId(id)
+    );
     if (invalid) {
       return res.status(400).json({ message: `Invalid ObjectId: ${invalid}` });
     }
 
-    // 1) find existing relations (so we do not try to insert duplicates)
+    // order_id & event_id are STRING from Frappe → no ObjectId check needed
+
+    // 3) Check existing relations
     const existing = await GuestGroupRelation.find({
       guest_id: { $in: guest_ids },
       group_id,
-      order_id
-    }).select("guest_id").lean();
+      order_id, // string compare
+      event_id, // string compare
+    })
+      .select("guest_id")
+      .lean();
 
-    const existingIds = new Set(existing.map(e => String(e.guest_id)));
-    const newGuestIds = guest_ids.filter(id => !existingIds.has(String(id)));
+    const existingIds = new Set(existing.map((e) => String(e.guest_id)));
+    const newGuestIds = guest_ids.filter((id) => !existingIds.has(String(id)));
 
-    // If nothing new, return clear response
     if (newGuestIds.length === 0) {
       return res.status(200).json({
-        message: "All guests already exist in this group/order combination",
+        message: "All guests already exist in this group/order/event combination",
         addedCount: 0,
-        alreadyExistCount: existingIds.size
+        alreadyExistCount: existingIds.size,
       });
     }
 
-    // 2) create docs with fields (explicitly include defaults you want applied)
-    // We include uniqueUrl here so insertMany doesn't rely on schema default behavior in case driver bypasses it.
-    const docs = newGuestIds.map(gid => ({
+    // 4) Create new docs
+    const docs = newGuestIds.map((gid) => ({
       guest_id: new mongoose.Types.ObjectId(gid),
-      group_id:  new mongoose.Types.ObjectId(group_id),
-      order_id: order_id,
+      group_id: new mongoose.Types.ObjectId(group_id),
+      order_id, // keep as string
+      event_id, // keep as string
       uniqueUrl: `https://klickinvite.com/invite/${shortid.generate()}`,
       inviteStatus: {
         preInvite: {},
         invite: {},
         reminder: {},
-        thankyou: {}
+        thankyou: {},
       },
-      views: 0
+      views: 0,
     }));
 
-    // 3) Insert with insertMany so Mongoose applies validation and returns documents
-    // ordered:false allows partial success (skip duplicates if any race)
+    // 5) Insert
     let inserted;
     try {
       inserted = await GuestGroupRelation.insertMany(docs, { ordered: false });
     } catch (err) {
-      // insertMany can throw BulkWriteError for duplicates; but inserted docs (if any) will be in err result.
-      // We'll still try to salvage inserted docs if available.
       if (err && err.insertedDocs) {
         inserted = err.insertedDocs;
       } else if (err && err.code === 11000) {
-        // duplicate key — none inserted, but previously existing 
         inserted = [];
       } else {
-        // validation or other error — bubble up
         console.error("insertMany error:", err);
-        return res.status(500).json({ message: "Error inserting relations", error: err.message });
+        return res
+          .status(500)
+          .json({ message: "Error inserting relations", error: err.message });
       }
     }
 
     const addedCount = Array.isArray(inserted) ? inserted.length : 0;
     const alreadyExistCount = guest_ids.length - addedCount;
 
-    // Optionally return inserted docs
     return res.status(201).json({
       message: `${addedCount} guests added, ${alreadyExistCount} already existed`,
       addedCount,
       alreadyExistCount,
-      relations: inserted
+      relations: inserted,
     });
   } catch (err) {
     console.error("addGuestsToGroup (fatal) error:", err);
-    return res.status(500).json({ message: "Error adding guests to group", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Error adding guests to group", error: err.message });
   }
 };
 

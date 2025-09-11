@@ -123,7 +123,7 @@ const inviteOpenLogSchema = new Schema({
   ip: String,
   pageViews: {
     wishes: { type: Number, default: 0 },
-    gallery: { type: Number, default: 0 },
+    gallery: { type: Number, default: 0 },  
     invite: { type: Number, default: 0 },
     home: { type: Number, default: 0 }
   },
