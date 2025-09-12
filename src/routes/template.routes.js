@@ -10,7 +10,7 @@ import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemp
 import { createGroup,getGroupsByOrder,getGroupById} from "../controllers/GuestGroup.controller.js";
 import {addGuestsToGroup,getHostGroupGuests,sendInvitation} from '../controllers/GuestGroupRelation.controller.js'
 import {checkFrappeAuth} from '../middlewares/checkFrappeAuth.js'
-import { createMsgFormat } from "../controllers/CustomMsgFormat.controller.js";
+import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat } from "../controllers/CustomMsgFormat.controller.js";
 import { submitRSVP } from "../controllers/Rsvp.controller.js";
 
 
@@ -38,12 +38,16 @@ router.get("/getHostGroupGuests/:group_id",checkFrappeAuth,getHostGroupGuests)
 
 // Msg FOrmate Api
 router.post("/createMsgFormat",createMsgFormat)
+router.get("/getMsgFormatsByOrder/:order_id",getMsgFormatsByOrder)
+router.put("/updateMsgFormat/:msg_id",updateMsgFormat)
+router.delete("/deleteMsgFormat/:msg_id",deleteMsgFormat)
+
 
 // Invitaions APi
 router.post("/sendInvitation",checkFrappeAuth,sendInvitation)
 router.get("/getGroupById/:id",checkFrappeAuth,getGroupById)
 
 // RSVP API
-router.post("/submitRSVP",submitRSVP)
+router.post("/submitRSVP",checkFrappeAuth,submitRSVP)
 
 export default router
