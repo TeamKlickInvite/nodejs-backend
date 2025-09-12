@@ -29,7 +29,7 @@ router.put('/updateGuest/:guest_id',checkFrappeAuth,updateGuest)
 router.get("/getGuestsByHost/:host_id",checkFrappeAuth,getGuestsByHost)
 
 // GuestGroup
-router.post('/createGroup',checkFrappeAuth,createGroup)
+router.post('/createGroup',createGroup)
 router.get("/getGroupsByOrder/:order_id",checkFrappeAuth,getGroupsByOrder)
 
 // GuestGroupRelation
