@@ -7,7 +7,7 @@ import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemp
  import createTemplate ,{ getTemplateById}  from "../controllers/NewTemplate.controller.js"
  import { saveCustomization} from "../controllers/NewTemplate.controller.js"
  import { addGuest,updateGuest,deleteGuest,getGuestsByHost} from "../controllers/GuestBook.controller.js"
-import { createGroup,getGroupsByOrder,getGroupById} from "../controllers/GuestGroup.controller.js";
+import { createGroup,getGroupsByOrder,getGroupById,addEventToGroup,getGroupsByEvent,removeEventFromGroup,updateGroup,getGroupEvents} from "../controllers/GuestGroup.controller.js";
 import {addGuestsToGroup,getHostGroupGuests,sendInvitation} from '../controllers/GuestGroupRelation.controller.js'
 import {checkFrappeAuth} from '../middlewares/checkFrappeAuth.js'
 import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat } from "../controllers/CustomMsgFormat.controller.js";
@@ -30,7 +30,12 @@ router.get("/getGuestsByHost/:host_id",checkFrappeAuth,getGuestsByHost)
 
 // GuestGroup
 router.post('/createGroup',checkFrappeAuth,createGroup)
+router.put("/addEventToGroup/:group_id",checkFrappeAuth,addEventToGroup)
 router.get("/getGroupsByOrder/:order_id",checkFrappeAuth,getGroupsByOrder)
+router.get("/getGroupsByEvent/:eventId",checkFrappeAuth,getGroupsByEvent)
+router.delete("/removeEventFromGroup/:eventId",checkFrappeAuth,removeEventFromGroup)
+router.put("/updateGroup/:group_id",checkFrappeAuth,updateGroup)
+router.get("/getGroupEvents/:group_id",checkFrappeAuth,getGroupEvents)
 
 // GuestGroupRelation
 router.post('/addGuestsToGroup',checkFrappeAuth,addGuestsToGroup)

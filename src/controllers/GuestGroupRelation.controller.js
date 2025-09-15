@@ -8,13 +8,13 @@ import { Guest } from '../models/GuestBook.models.js';
 
 export const addGuestsToGroup = async (req, res) => {
   try {
-    const { guest_ids, group_id, order_id, event_id } = req.body;
+    const { guest_ids, group_id, order_id} = req.body;
 
     // 1) Basic validation
     if (!Array.isArray(guest_ids) || guest_ids.length === 0) {
       return res.status(400).json({ message: "guest_ids must be a non-empty array" });
     }
-    if (!group_id || !order_id || !event_id) {
+    if (!group_id || !order_id ) {
       return res.status(400).json({ message: "group_id, order_id and event_id are required" });
     }
 
@@ -33,7 +33,6 @@ export const addGuestsToGroup = async (req, res) => {
       guest_id: { $in: guest_ids },
       group_id,
       order_id, // string compare
-      event_id, // string compare
     })
       .select("guest_id")
       .lean();
@@ -43,7 +42,7 @@ export const addGuestsToGroup = async (req, res) => {
 
     if (newGuestIds.length === 0) {
       return res.status(200).json({
-        message: "All guests already exist in this group/order/event combination",
+        message: "All guests already exist in this group/order combination",
         addedCount: 0,
         alreadyExistCount: existingIds.size,
       });
@@ -54,7 +53,6 @@ export const addGuestsToGroup = async (req, res) => {
       guest_id: new mongoose.Types.ObjectId(gid),
       group_id: new mongoose.Types.ObjectId(group_id),
       order_id, // keep as string
-      event_id, // keep as string
       uniqueUrl: `https://klickinvite.com/invite/${shortid.generate()}`,
       inviteStatus: {
         preInvite: {},

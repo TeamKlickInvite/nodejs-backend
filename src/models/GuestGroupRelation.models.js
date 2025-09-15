@@ -16,7 +16,6 @@ const GuestGroupRelationSchema = new Schema({
   guest_id: { type: Schema.Types.ObjectId, ref: "Guest", required: true },
   group_id: { type: Schema.Types.ObjectId, ref: "Group", required: true },
   order_id: { type: String, required: true }, 
-  event_id: { type: String, required: true },
   uniqueUrl: {
     type: String,
     unique: true,

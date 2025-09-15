@@ -1,5 +1,6 @@
 import Group from "../models/GuestGroup.models.js"
 import Joi from "joi"
+import mongoose from "mongoose";
 
 
 export const getGroupsByOrder = async (req, res) => {
@@ -11,26 +12,208 @@ export const getGroupsByOrder = async (req, res) => {
     res.status(500).json({ message: 'Error', error: error.message });
   }
 };
+
+export const createGroup = async (req, res) => {
+  try {
+    const { order_id, name, category, events } = req.body;
+
+    // Joi validation
+    const schema = Joi.object({
+      order_id: Joi.string().trim().required().messages({
+        "string.base": "order_id must be a string",
+        "any.required": "order_id is required",
+      }),
+      name: Joi.string().trim().min(3).max(100).required(),
+      category: Joi.string().trim().min(3).max(50).required(),
+      events: Joi.array().items(Joi.string().trim().required()).min(1).required()
+        .messages({
+          "array.base": "events must be an array of strings",
+          "array.min": "At least one event is required",
+        }),
+    });
+
+    const { error } = schema.validate({ order_id, name, category, events });
+    if (error) {
+      return res.status(400).json({ success: false, message: error.details[0].message });
+    }
+
+    // ✅ Remove duplicates in events array
+    const uniqueEvents = [...new Set(events)];
+
+    // ✅ Check if group with same name + order already exists
+    const existingGroup = await Group.findOne({ order_id, name: { $regex: `^${name}$`, $options: "i" } });
+    if (existingGroup) {
+      return res.status(400).json({
+        success: false,
+        message: "Group with this name already exists under the same order",
+      });
+    }
+
+    const group = await Group.create({
+      order_id,
+      name,
+      category,
+      events: uniqueEvents,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Group created successfully",
+      data: group,
+    });
+  } catch (error) {
+    console.error("❌ Error creating group:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+
+
+export const addEventToGroup = async (req, res) => {
+  try {
+    const { group_id } = req.params;
+    const { eventIds } = req.body; // ✅ Array of eventIds
+
+    if (!Array.isArray(eventIds) || eventIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "eventIds must be a non-empty array"
+      });
+    }
+
+    const group = await Group.findById(group_id);
+    if (!group) {
+      return res.status(404).json({ success: false, message: "Group not found" });
+    }
+
+    // ✅ Check existing vs new
+    const alreadyExist = [];
+    const newEvents = [];
+
+    eventIds.forEach(eventId => {
+      if (group.events.includes(eventId)) {
+        alreadyExist.push(eventId);
+      } else {
+        newEvents.push(eventId);
+      }
+    });
+
+    // ✅ Add only new unique events
+    if (newEvents.length > 0) {
+      group.events.push(...newEvents);
+      await group.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Event(s) processed successfully",
+      data: {
+        added: newEvents,
+        alreadyExist
+      },
+      group
+    });
+  } catch (error) {
+    console.error("❌ Error adding events to group:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message
+    });
+  }
+};
+
+
+export const getGroupsByEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    if (!eventId) {
+      return res.status(400).json({ success: false, message: "eventId is required" });
+    }
+
+    const groups = await Group.find({ events: eventId });
+    console.log(groups)
+    if (!groups || groups.length === 0) {
+  return res.status(404).json({
+    success: false,
+    message: "No groups found for this event",
+  });
+}
+
+    return res.status(200).json({
+      success: true,
+      message: "Groups fetched successfully",
+      data: groups,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching groups:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+// controllers/groupController.js
+export const removeEventFromGroup = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    if (!eventId) {
+      return res.status(400).json({
+        success: false,
+        message: "eventId is required",
+      });
+    }
+
+    // Event ko group ke array se pull karna
+    const updatedGroup = await Group.findOneAndUpdate(
+      { events: eventId },
+      { $pull: { events: eventId } },
+      { new: true }
+    );
+
+    if (!updatedGroup) {
+      return res.status(404).json({
+        success: false,
+        message: "No group found containing this eventId",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Event removed from group successfully",
+      data: updatedGroup,
+    });
+  } catch (error) {
+    console.error("❌ Error removing event from group:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+// ✅ Create Group
 // export const createGroup = async (req, res) => {
 //   try {
-//     const { order_id, name, category, eventId } = req.body;
-
-//     // ✅ Validation
-//     if (!order_id) {
-//       return res.status(400).json({ success: false, message: "orderId is required" });
-//     }
-//     if (!name) {
-//       return res.status(400).json({ success: false, message: "Group name is required" });
-//     }
-//     if (!eventId) {
-//       return res.status(400).json({ success: false, message: "At least one eventId is required" });
-//     }
+//     const { order_id, name, category } = req.body;
 //     const schema = Joi.object({
 //           name: Joi.string().trim().min(3).max(100).required().messages({
-//             "string.base": "name must be String",
-//             "string.empty": "name is required",
-//             "string.min": "name must be at least 3 characters long",
-//             "string.max": "name must not exceed 100 characters",
+//             "string.base": "Tittle must be String",
+//             "string.empty": "Title is required",
+//             "string.min": "Title must be at least 3 characters long",
+//             "string.max": "Title must not exceed 100 characters",
 //           }),
 //           category: Joi.string().trim().min(3).max(50).required().messages({
 //             "string.base": "Category must be a string",
@@ -46,181 +229,22 @@ export const getGroupsByOrder = async (req, res) => {
 //         }
  
 
-//     const group = await Group.create({
-//       order_id,
-//       name,
-//       category,
-//       events: [eventId], // ✅ Always wrap in array
-//     });
+//     const newGroup = new Group({ order_id, name, category });
+//     await newGroup.save();
 
-//     return res.status(201).json({
+//     res.status(201).json({
 //       success: true,
 //       message: "Group created successfully",
-//       data: group,
+//       group: newGroup
 //     });
 //   } catch (error) {
-//     console.error("❌ Error creating group:", error.message);
-//     return res.status(500).json({
+//     res.status(500).json({
 //       success: false,
-//       message: "Internal Server Error",
-//       error: error.message,
+//       message: "Error creating group",
+//       error: error.message
 //     });
 //   }
 // };
-
-
-// export const addEventToGroup = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { eventId } = req.body;
-
-//     // ✅ Validation
-//     if (!eventId) {
-//       return res.status(400).json({ success: false, message: "eventId is required" });
-//     }
-
-//     const group = await Group.findByIdAndUpdate(
-//       id,
-//       { $push: { events: eventId } }, // ✅ push single only
-//       { new: true }
-//     );
-
-//     if (!group) {
-//       return res.status(404).json({ success: false, message: "Group not found" });
-//     }
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Event added to group successfully",
-//       data: group,
-//     });
-//   } catch (error) {
-//     console.error("❌ Error adding event:", error.message);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Internal Server Error",
-//       error: error.message,
-//     });
-//   }
-// };
-
-// export const getGroupsByEvent = async (req, res) => {
-//   try {
-//     const { eventId } = req.params;
-
-//     if (!eventId) {
-//       return res.status(400).json({ success: false, message: "eventId is required" });
-//     }
-
-//     const groups = await Group.find({ events: eventId });
-//     console.log(groups)
-//     if (!groups || groups.length === 0) {
-//   return res.status(404).json({
-//     success: false,
-//     message: "No groups found for this event",
-//   });
-// }
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Groups fetched successfully",
-//       data: groups,
-//     });
-//   } catch (error) {
-//     console.error("❌ Error fetching groups:", error.message);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Internal Server Error",
-//       error: error.message,
-//     });
-//   }
-// };
-
-// // controllers/groupController.js
-// export const removeEventFromGroup = async (req, res) => {
-//   try {
-//     const { eventId } = req.params;
-
-//     if (!eventId) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "eventId is required",
-//       });
-//     }
-
-//     // Event ko group ke array se pull karna
-//     const updatedGroup = await Group.findOneAndUpdate(
-//       { events: eventId },
-//       { $pull: { events: eventId } },
-//       { new: true }
-//     );
-
-//     if (!updatedGroup) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "No group found containing this eventId",
-//       });
-//     }
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Event removed from group successfully",
-//       data: updatedGroup,
-//     });
-//   } catch (error) {
-//     console.error("❌ Error removing event from group:", error.message);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Internal Server Error",
-//       error: error.message,
-//     });
-//   }
-// };
-
-
-
-
-// ✅ Create Group
-export const createGroup = async (req, res) => {
-  try {
-    const { order_id, name, category } = req.body;
-    const schema = Joi.object({
-          name: Joi.string().trim().min(3).max(100).required().messages({
-            "string.base": "Tittle must be String",
-            "string.empty": "Title is required",
-            "string.min": "Title must be at least 3 characters long",
-            "string.max": "Title must not exceed 100 characters",
-          }),
-          category: Joi.string().trim().min(3).max(50).required().messages({
-            "string.base": "Category must be a string",
-            "string.empty": "Category is required",
-            "string.min": "Category must be at least 3 characters long",
-            "string.max": "Category must not exceed 50 characters",
-          })
-        });
-                                  // Validate input
-        const { error } = schema.validate({ name, category });
-        if (error) {
-          return res.status(400).json({ success: false, message: error.details[0].message });
-        }
- 
-
-    const newGroup = new Group({ order_id, name, category });
-    await newGroup.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Group created successfully",
-      group: newGroup
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error creating group",
-      error: error.message
-    });
-  }
-};
 // 
 // ✅ Get All Groups
 
@@ -249,31 +273,85 @@ export const getGroupById = async (req, res) => {
   }
 };
 
-// ✅ Update Group
 export const updateGroup = async (req, res) => {
   try {
-    const updatedGroup = await Group.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const { group_id } = req.params;
+    const { name, category, eventIds } = req.body;
 
-    if (!updatedGroup) {
-      return res.status(404).json({
-        success: false,
-        message: "Group not found"
+    if (!mongoose.Types.ObjectId.isValid(group_id)) {
+      return res.status(400).json({ success: false, message: "Invalid group_id format" });
+    }
+
+    const group = await Group.findById(group_id);
+    if (!group) {
+      return res.status(404).json({ success: false, message: "Group not found" });
+    }
+
+    // ✅ Update name & category (if provided)
+    if (name) group.name = name.trim();
+    if (category) group.category = category.trim();
+
+    let addedEvents = [];
+    let alreadyExists = [];
+
+    if (Array.isArray(eventIds) && eventIds.length > 0) {
+      eventIds.forEach(eventId => {
+        if (!group.events.includes(eventId)) {
+          group.events.push(eventId);
+          addedEvents.push(eventId);
+        } else {
+          alreadyExists.push(eventId);
+        }
       });
     }
 
-    res.json({
+    group.updatedAt = new Date();
+    await group.save();
+
+    return res.status(200).json({
       success: true,
       message: "Group updated successfully",
-      group: updatedGroup
+      data: group,
+      addedEvents,
+      alreadyExists
+    });
+
+  } catch (error) {
+    console.error("❌ Error updating group:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message
+    });
+  }
+};
+export const getGroupEvents = async (req, res) => {
+  try {
+    const { group_id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(group_id)) {
+      return res.status(400).json({ success: false, message: "Invalid group_id format" });
+    }
+
+    const group = await Group.findById(group_id).select("name category events");
+    if (!group) {
+      return res.status(404).json({ success: false, message: "Group not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Events fetched successfully",
+      group_id: group._id,
+      group_name: group.name,
+      category: group.category,
+      totalEvents: group.events.length,
+      events: group.events
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("❌ Error fetching group events:", error.message);
+    return res.status(500).json({
       success: false,
-      message: "Error updating group",
+      message: "Internal Server Error",
       error: error.message
     });
   }

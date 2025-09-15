@@ -1,21 +1,31 @@
-
 import mongoose from "mongoose";
 
 const GroupSchema = new mongoose.Schema({
-  order_id : {
+  order_id: {
     type: String,   // frappe ka order id
     required: true,
+    trim: true,
   },
   name: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    minlength: 3,
+    maxlength: 100
   },
   category: {
-    type: String, // 1: family, 2: friends, 3: coworker
-    required: true
+    type: String, // family, friends, coworker
+    required: true,
+    trim: true,
+    minlength: 3,
+    maxlength: 50
   },
-
+  events: [
+    {
+      type: String,  // frappe ka event id (string, not ObjectId)
+      required: true
+    }
+  ],
   // settings: {
   //   askRsvp: { type: Boolean, default: false },
   //   showGallery: {
@@ -39,7 +49,6 @@ const GroupSchema = new mongoose.Schema({
   //     playInLoop: { type: Boolean, default: false }
   //   }
   // },
-
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
