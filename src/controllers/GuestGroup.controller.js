@@ -84,6 +84,7 @@ export const addEventToGroup = async (req, res) => {
         message: "eventIds must be a non-empty array"
       });
     }
+    
 
     const group = await Group.findById(group_id);
     if (!group) {

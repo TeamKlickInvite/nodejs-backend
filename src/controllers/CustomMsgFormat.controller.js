@@ -23,20 +23,20 @@ const sendResponse = (res, statusCode, success, message, data = null, error = nu
  * --------------------------- */
 export const createMsgFormat = async (req, res) => {
   try {
-    const { order_id, event_id, msg_medium, invite_type, msg_text } = req.body;
+    const { order_id,  msg_medium, invite_type, msg_text } = req.body;
 
     // Required field check
-    if (!order_id || !event_id || msg_medium === undefined || invite_type === undefined || !msg_text) {
+    if (!order_id || !msg_medium === undefined || invite_type === undefined || !msg_text) {
       return sendResponse(res, 400, false, 'All fields are required');
     }
 
     // order_id & event_id (Frappe IDs) => must be string
-    if (typeof order_id !== 'string' || typeof event_id !== 'string') {
+    if (typeof order_id !== 'string') {
       return sendResponse(res, 400, false, 'order_id and event_id must be strings');
     }
 
     // Validate msg_medium
-    const validMediums = [0, 1]; // 0=SMS, 1=Email
+    const validMediums = [0, 1,2]; // 0=SMS, 1=Email
     if (!validMediums.includes(Number(msg_medium))) {
       return sendResponse(res, 400, false, `Invalid msg_medium. Allowed: ${validMediums.join(', ')}`);
     }
@@ -50,7 +50,6 @@ export const createMsgFormat = async (req, res) => {
     // Create new record
     const newMsgFormat = new CustomMsgFormat({
       order_id,
-      event_id,
       msg_medium,
       invite_type,
       msg_text
