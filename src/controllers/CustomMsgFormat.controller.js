@@ -23,6 +23,7 @@ const sendResponse = (res, statusCode, success, message, data = null, error = nu
  * --------------------------- */
 export const createMsgFormat = async (req, res) => {
   try {
+    
     const { order_id,  msg_medium, invite_type, msg_text } = req.body;
 
     // Required field check
@@ -36,11 +37,12 @@ export const createMsgFormat = async (req, res) => {
     }
 
     // Validate msg_medium
-    const validMediums = [0, 1,2]; // 0=SMS, 1=Email
+    const validMediums = [1,2,3]; // 1=SMS, 2=Email
     if (!validMediums.includes(Number(msg_medium))) {
       return sendResponse(res, 400, false, `Invalid msg_medium. Allowed: ${validMediums.join(', ')}`);
     }
 
+     
     // Validate invite_type
     const validTypes = [0, 1, 2, 3]; // 0=preinvite, 1=invite, 2=reminder, 3=thank_you
     if (!validTypes.includes(Number(invite_type))) {
@@ -112,7 +114,7 @@ export const updateMsgFormat = async (req, res) => {
       { msg_text, updatedAt: new Date() },
       { new: true, runValidators: true }
     );
-
+    
     if (!msgFormat) {
       return sendResponse(res, 404, false, 'Custom message not found');
     }

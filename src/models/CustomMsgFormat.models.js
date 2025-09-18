@@ -8,7 +8,7 @@ const CustomMsgFormatSchema = new Schema(
     // 👇 String because order_id & event_id come from Frappe
     order_id: { type: String, required: true },
 
-    msg_medium: { type: Number, enum: [0, 1,2], required: true }, 
+    msg_medium: { type: Number, enum: [0, 1,2,3], required: true }, 
     // 0 = SMS, 1 = Email
 
     invite_type: { type: Number, enum: [0, 1, 2, 3], required: true }, 
