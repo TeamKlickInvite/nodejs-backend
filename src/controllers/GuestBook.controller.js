@@ -21,7 +21,7 @@ export const addGuest = async (req, res) => {
 //   session.startTransaction();
 
   try {
-    const { host_id, guests } = req.body;
+    const { host_id, guests,displayName } = req.body;
 
     // ====== 1. Basic Input Validation ======
     if (!host_id) {
@@ -85,6 +85,7 @@ export const addGuest = async (req, res) => {
     // ====== 3. Insert Guests ======
     const newGuests = guests.map(guest => ({
       host_id,
+      displayName,
       ...guest
     }));
 
