@@ -103,6 +103,7 @@ export const addGuestsToGroup = async (req, res) => {
 export const removeGuestFromGroup = async (req, res) => {
   try {
     const { relation_id } = req.params; 
+    console.log(relation_id)
 
     const deleted = await GuestGroupRelation.findByIdAndDelete(relation_id);
 
