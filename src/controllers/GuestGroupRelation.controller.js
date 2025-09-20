@@ -115,6 +115,7 @@ export const removeGuestFromGroup = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error removing guest", error: error.message });
   }
+
 };
 
 /**
