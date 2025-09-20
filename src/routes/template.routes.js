@@ -10,7 +10,7 @@ import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemp
 import { createGroup,getGroupsByOrder,getGroupById,addEventToGroup,getGroupsByEvent,removeEventFromGroup,updateGroup,getGroupEvents} from "../controllers/GuestGroup.controller.js";
 import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveMultipleGuests} from '../controllers/GuestGroupRelation.controller.js'
 import {checkFrappeAuth} from '../middlewares/checkFrappeAuth.js'
-import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat } from "../controllers/CustomMsgFormat.controller.js";
+import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat,getMsgFormatsByGroup } from "../controllers/CustomMsgFormat.controller.js";
 import { submitRSVP } from "../controllers/Rsvp.controller.js";
 
 
@@ -46,9 +46,11 @@ router.post("/moveMultipleGuests",moveMultipleGuests)
 
 // Msg FOrmate Api
 router.post("/createMsgFormat",createMsgFormat)
+router.get("/getMsgFormatsByGroup/:group_id",getMsgFormatsByGroup)
 router.get("/getMsgFormatsByOrder/:order_id",getMsgFormatsByOrder)
 router.put("/updateMsgFormat/:msg_id",updateMsgFormat)
 router.delete("/deleteMsgFormat/:msg_id",deleteMsgFormat)
+
 
 
 // Invitaions APi

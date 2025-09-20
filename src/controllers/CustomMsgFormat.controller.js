@@ -1,6 +1,7 @@
 // controllers/msgFormatController.js
 import mongoose from 'mongoose';
 import CustomMsgFormat from '../models/CustomMsgFormat.models.js';
+import Group from '../models/GuestGroup.models.js';
 
 /** ---------------------------
  * Helpers
@@ -24,10 +25,14 @@ const sendResponse = (res, statusCode, success, message, data = null, error = nu
 export const createMsgFormat = async (req, res) => {
   try {
     
-    const { order_id,  msg_medium, invite_type, msg_text } = req.body;
+    const { order_id,  msg_medium, invite_type, msg_text ,group_id } = req.body;
+
+    if(!mongoose.Types.ObjectId.isValid(group_id)){
+      return res.status(400).json({ success: false, message: 'Valid to_group_id is required' });
+    }
 
     // Required field check
-    if (!order_id || !msg_medium === undefined || invite_type === undefined || !msg_text) {
+    if (!order_id || !group_id || !msg_medium === undefined || invite_type === undefined || !msg_text) {
       return sendResponse(res, 400, false, 'All fields are required');
     }
 
@@ -52,6 +57,7 @@ export const createMsgFormat = async (req, res) => {
     // Create new record
     const newMsgFormat = new CustomMsgFormat({
       order_id,
+      group_id,
       msg_medium,
       invite_type,
       msg_text
@@ -90,6 +96,26 @@ export const getMsgFormatsByOrder = async (req, res) => {
     return sendResponse(res, 500, false, 'Internal server error', null, error.message);
   }
 };
+export const getMsgFormatsByGroup = async (req, res) => {
+  try {
+    const { group_id } = req.params;
+
+   if(!mongoose.Types.ObjectId.isValid(group_id)){
+      return res.status(400).json({ success: false, message: 'Valid to_group_id is required' });
+    }
+    const msgFormats = await CustomMsgFormat.find({ group_id }).lean();
+
+    if (!msgFormats.length) {
+      return sendResponse(res, 404, false, 'No custom messages found for this order');
+    }
+
+    return sendResponse(res, 200, true, 'Custom messages fetched successfully', msgFormats);
+  } catch (error) {
+    console.error('Get MsgFormats Error:', error);
+    return sendResponse(res, 500, false, 'Internal server error', null, error.message);
+  }
+};
+
 
 /** ---------------------------
  * @desc Update a message format
