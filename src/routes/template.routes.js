@@ -39,11 +39,11 @@ router.get("/getGroupEvents/:group_id",checkFrappeAuth,getGroupEvents)
 
 // GuestGroupRelation
 router.post('/addGuestsToGroup',checkFrappeAuth,addGuestsToGroup)
-router.delete("/removeGuestFromGroup/:relation_id",removeGuestFromGroup)
+router.delete("/removeGuestFromGroup/:relation_id",checkFrappeAuth,removeGuestFromGroup)
 router.get("/getHostGroupGuests/:group_id",checkFrappeAuth,getHostGroupGuests)
 router.get("/invitedGuest/:order_id",checkFrappeAuth,invitedGuest)
-router.post("/moveMultipleGuests",checkFrappeAuth,moveMultipleGuests)
-router.get("/getAvailableGuestsByGroup/:host_id/:group_id",getAvailableGuestsByGroup)
+router.post("/moveMultipleGuests",moveMultipleGuests)
+router.get("/getAvailableGuestsByGroup/:host_id/:group_id",checkFrappeAuth,getAvailableGuestsByGroup)
 
 
 // Msg FOrmate Api
