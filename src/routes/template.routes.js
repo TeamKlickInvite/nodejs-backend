@@ -8,7 +8,7 @@ import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemp
  import { saveCustomization} from "../controllers/NewTemplate.controller.js"
  import { addGuest,updateGuest,deleteGuest,getGuestsByHost} from "../controllers/GuestBook.controller.js"
 import { createGroup,getGroupsByOrder,getGroupById,addEventToGroup,getGroupsByEvent,removeEventFromGroup,updateGroup,getGroupEvents} from "../controllers/GuestGroup.controller.js";
-import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveMultipleGuests} from '../controllers/GuestGroupRelation.controller.js'
+import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveMultipleGuests,getAvailableGuestsByGroup} from '../controllers/GuestGroupRelation.controller.js'
 import {checkFrappeAuth} from '../middlewares/checkFrappeAuth.js'
 import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat,getMsgFormatsByGroup } from "../controllers/CustomMsgFormat.controller.js";
 import { submitRSVP } from "../controllers/Rsvp.controller.js";
@@ -40,16 +40,17 @@ router.get("/getGroupEvents/:group_id",checkFrappeAuth,getGroupEvents)
 // GuestGroupRelation
 router.post('/addGuestsToGroup',checkFrappeAuth,addGuestsToGroup)
 router.get("/getHostGroupGuests/:group_id",checkFrappeAuth,getHostGroupGuests)
-router.get("/invitedGuest/:order_id",invitedGuest)
-router.post("/moveMultipleGuests",moveMultipleGuests)
+router.get("/invitedGuest/:order_id",checkFrappeAuth,invitedGuest)
+router.post("/moveMultipleGuests",checkFrappeAuth,moveMultipleGuests)
+router.get("/getAvailableGuestsByGroup/:host_id/:group_id",getAvailableGuestsByGroup)
 
 
 // Msg FOrmate Api
-router.post("/createMsgFormat",createMsgFormat)
-router.get("/getMsgFormatsByGroup/:group_id",getMsgFormatsByGroup)
-router.get("/getMsgFormatsByOrder/:order_id",getMsgFormatsByOrder)
-router.put("/updateMsgFormat/:msg_id",updateMsgFormat)
-router.delete("/deleteMsgFormat/:msg_id",deleteMsgFormat)
+router.post("/createMsgFormat",checkFrappeAuth,createMsgFormat)
+router.get("/getMsgFormatsByGroup/:group_id",checkFrappeAuth,getMsgFormatsByGroup)
+router.get("/getMsgFormatsByOrder/:order_id",checkFrappeAuth,getMsgFormatsByOrder)
+router.put("/updateMsgFormat/:msg_id",checkFrappeAuth,updateMsgFormat)
+router.delete("/deleteMsgFormat/:msg_id",checkFrappeAuth,deleteMsgFormat)
 
 
 

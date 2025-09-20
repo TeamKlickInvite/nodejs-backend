@@ -475,6 +475,100 @@ export const openInvitation = async (req, res) => {
 
 
 
+export const getAvailableGuestsByGroup = async (req, res) => {
+  try {
+    const { host_id, group_id } = req.params;
+
+    // --------------------
+    // 1. Validate params
+    // --------------------
+    if (!host_id || !group_id) {
+      return res.status(400).json({
+        success: false,
+        message: "host_id and group_id are required",
+      });
+    }
+
+    // host_id must be string, group_id must be ObjectId
+    if (typeof host_id !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "host_id must be a string",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(group_id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid group_id format",
+      });
+    }
+
+    // --------------------
+    // 2. Fetch host's guests
+    // --------------------
+    const allGuests = await Guest.find({ host_id })
+      .select("name displayName contacts")
+      .lean();
+
+    if (!allGuests.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No guests found for this host",
+      });
+    }
+
+    // --------------------
+    // 3. Fetch group relations
+    // --------------------
+    const groupRelations = await GuestGroupRelation.find({
+      group_id: new mongoose.Types.ObjectId(group_id),
+    })
+      .select("guest_id")
+      .lean();
+   
+
+    const addedGuestIds = new Set(
+      groupRelations.map((rel) => rel.guest_id.toString())
+    );
+
+    // --------------------
+    // 4. Filter available guests
+    // --------------------
+    const availableGuests = allGuests.filter(
+      (guest) => !addedGuestIds.has(guest._id.toString())
+    );
+
+    if (!availableGuests.length) {
+      return res.status(404).json({
+        success: false,
+        message: "all guests are already added ",
+      });
+    }
+
+    // --------------------
+    // 5. Response
+    // --------------------
+    return res.status(200).json({
+      success: true,
+      message: "Available guests fetched successfully",
+      count: availableGuests.length,
+      data: availableGuests,
+    });
+  } catch (error) {
+    console.error("Error in getAvailableGuestsByGroup:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while fetching available guests",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+
+
+
 
 // // Add to invitationController.js or new file
 // export const openInvitation = async (req, res) => {
