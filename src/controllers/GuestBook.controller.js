@@ -15,7 +15,6 @@ export const addGuest = async (req, res) => {
   try {
     console.log("RAW BODY:", req.body);
     const { host_id, guests,displayName } = req.body;
-    console.log("RAW BODY:", req.body);
     console.log(host_id)
     console.log(guests)
     console.log(displayName)
