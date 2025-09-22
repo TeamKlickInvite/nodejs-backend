@@ -13,7 +13,7 @@ export const getGuestsByHost = async (req, res) => {
 export const addGuest = async (req, res) => {
 
   try {
-    console.log("RAW BODY:", req.body);
+console.log("RAW BODY:", JSON.stringify(req.body, null, 2));
     const { host_id, guests,displayName } = req.body;
     console.log(host_id)
     console.log(guests)
