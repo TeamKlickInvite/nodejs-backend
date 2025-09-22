@@ -22,6 +22,9 @@ export const addGuest = async (req, res) => {
 
   try {
     const { host_id, guests,displayName } = req.body;
+    console.log(host_id)
+    console.log(guests)
+    console.log(displayName)
 
     // ====== 1. Basic Input Validation ======
     if (!host_id) {
