@@ -13,10 +13,7 @@ export const getGuestsByHost = async (req, res) => {
 export const addGuest = async (req, res) => {
 
   try {
-console.log("RAW BODY:", JSON.stringify(req.body, null, 2));
-    const { host_id, guests} = req.body;
-    console.log(host_id)
-    console.log(guests)
+    const { host_id, guests,displayName } = req.body;
 
     // ====== 1. Basic Input Validation ======
     if (!host_id) {
@@ -80,6 +77,7 @@ console.log("RAW BODY:", JSON.stringify(req.body, null, 2));
     // ====== 3. Insert Guests ======
     const newGuests = guests.map(guest => ({
       host_id,
+      displayName,
       ...guest
     }));
 
