@@ -10,18 +10,12 @@ export const getGuestsByHost = async (req, res) => {
   }
 };  
 
-/**
- * Add multiple guests for a host
- * - Ensures proper validation of input
- * - Uses transactions for atomic insert
- * - Returns inserted guests or error
- */
 export const addGuest = async (req, res) => {
-//   const session = await mongoose.startSession();
-//   session.startTransaction();
 
   try {
+    console.log("RAW BODY:", req.body);
     const { host_id, guests,displayName } = req.body;
+    console.log("RAW BODY:", req.body);
     console.log(host_id)
     console.log(guests)
     console.log(displayName)
