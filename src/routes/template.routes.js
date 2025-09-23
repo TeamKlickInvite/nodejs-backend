@@ -42,7 +42,7 @@ router.post('/addGuestsToGroup',checkFrappeAuth,addGuestsToGroup)
 router.delete("/removeGuestFromGroup/:relation_id",checkFrappeAuth,removeGuestFromGroup)
 router.get("/getHostGroupGuests/:group_id",checkFrappeAuth,getHostGroupGuests)
 router.get("/invitedGuest/:order_id",checkFrappeAuth,invitedGuest)
-router.post("/moveMultipleGuests",moveGuestToNewGroup)
+router.post("/moveGuestToNewGroup",checkFrappeAuth,moveGuestToNewGroup)
 router.get("/getAvailableGuestsByGroup/:host_id/:group_id",checkFrappeAuth,getAvailableGuestsByGroup)
 
 
