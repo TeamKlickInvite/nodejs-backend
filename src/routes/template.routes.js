@@ -8,7 +8,7 @@ import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemp
  import { saveCustomization} from "../controllers/NewTemplate.controller.js"
  import { addGuest,updateGuest,deleteGuest,getGuestsByHost} from "../controllers/GuestBook.controller.js"
 import { createGroup,getGroupsByOrder,getGroupById,addEventToGroup,getGroupsByEvent,removeEventFromGroup,updateGroup,getGroupEvents} from "../controllers/GuestGroup.controller.js";
-import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveMultipleGuests,getAvailableGuestsByGroup,removeGuestFromGroup} from '../controllers/GuestGroupRelation.controller.js'
+import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveGuestToNewGroup,getAvailableGuestsByGroup,removeGuestFromGroup} from '../controllers/GuestGroupRelation.controller.js'
 import {checkFrappeAuth} from '../middlewares/checkFrappeAuth.js'
 import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat,getMsgFormatsByGroup } from "../controllers/CustomMsgFormat.controller.js";
 import { submitRSVP } from "../controllers/Rsvp.controller.js";
@@ -32,9 +32,9 @@ router.get("/getGuestsByHost/:host_id",checkFrappeAuth,getGuestsByHost)
 router.post('/createGroup',checkFrappeAuth,createGroup)
 router.put("/addEventToGroup/:group_id",checkFrappeAuth,addEventToGroup)
 router.get("/getGroupsByOrder/:order_id",checkFrappeAuth,getGroupsByOrder)
-router.get("/getGroupsByEvent/:eventId",checkFrappeAuth,getGroupsByEvent)
-router.delete("/removeEventFromGroup/:eventId",checkFrappeAuth,removeEventFromGroup)
-router.put("/updateGroup/:group_id",checkFrappeAuth,updateGroup)
+router.get("/getGroupsByentFromGroup/:eventId",checkFrappeAuth,removeEventFromGroup)
+router.put("/updateGroupEvent/:eventId",checkFrappeAuth,getGroupsByEvent)
+router.delete("/removeEv/:group_id",checkFrappeAuth,updateGroup)
 router.get("/getGroupEvents/:group_id",checkFrappeAuth,getGroupEvents)
 
 // GuestGroupRelation
@@ -42,7 +42,7 @@ router.post('/addGuestsToGroup',checkFrappeAuth,addGuestsToGroup)
 router.delete("/removeGuestFromGroup/:relation_id",checkFrappeAuth,removeGuestFromGroup)
 router.get("/getHostGroupGuests/:group_id",checkFrappeAuth,getHostGroupGuests)
 router.get("/invitedGuest/:order_id",checkFrappeAuth,invitedGuest)
-router.post("/moveMultipleGuests",moveMultipleGuests)
+router.post("/moveMultipleGuests",moveGuestToNewGroup)
 router.get("/getAvailableGuestsByGroup/:host_id/:group_id",checkFrappeAuth,getAvailableGuestsByGroup)
 
 
