@@ -160,12 +160,6 @@ export const getGroupsByEvent = async (req, res) => {
     });
   }
 };
-
-// controllers/groupController.js
-// controllers/groupController.js
-import Group from "../models/Group.js";
-import mongoose from "mongoose";
-
 export const removeEventFromGroup = async (req, res) => {
   try {
     const { group_id, eventId } = req.params;
