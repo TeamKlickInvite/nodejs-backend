@@ -162,20 +162,32 @@ export const getGroupsByEvent = async (req, res) => {
 };
 
 // controllers/groupController.js
+// controllers/groupController.js
+import Group from "../models/Group.js";
+import mongoose from "mongoose";
+
 export const removeEventFromGroup = async (req, res) => {
   try {
-    const { eventId } = req.params;
+    const { group_id, eventId } = req.params;
 
-    if (!eventId) {
+    // ✅ Validation
+    if (!group_id || !eventId) {
       return res.status(400).json({
         success: false,
-        message: "eventId is required",
+        message: "group_id and eventId are required",
       });
     }
 
-    // Event ko group ke array se pull karna
+    if (!mongoose.Types.ObjectId.isValid(group_id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid group_id format",
+      });
+    }
+
+    // ✅ Group me se sirf specific event ko pull karo
     const updatedGroup = await Group.findOneAndUpdate(
-      { events: eventId },
+      { _id: group_id, events: eventId }, // ensure group match kare aur event exist kare
       { $pull: { events: eventId } },
       { new: true }
     );
@@ -183,7 +195,7 @@ export const removeEventFromGroup = async (req, res) => {
     if (!updatedGroup) {
       return res.status(404).json({
         success: false,
-        message: "No group found containing this eventId",
+        message: "Group not found or event not present in this group",
       });
     }
 
@@ -201,7 +213,6 @@ export const removeEventFromGroup = async (req, res) => {
     });
   }
 };
-
 
 
 
