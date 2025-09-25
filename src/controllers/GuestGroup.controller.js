@@ -205,51 +205,7 @@ export const removeEventFromGroup = async (req, res) => {
 
 
 
-// ✅ Create Group
-// export const createGroup = async (req, res) => {
-//   try {
-//     const { order_id, name, category } = req.body;
-//     const schema = Joi.object({
-//           name: Joi.string().trim().min(3).max(100).required().messages({
-//             "string.base": "Tittle must be String",
-//             "string.empty": "Title is required",
-//             "string.min": "Title must be at least 3 characters long",
-//             "string.max": "Title must not exceed 100 characters",
-//           }),
-//           category: Joi.string().trim().min(3).max(50).required().messages({
-//             "string.base": "Category must be a string",
-//             "string.empty": "Category is required",
-//             "string.min": "Category must be at least 3 characters long",
-//             "string.max": "Category must not exceed 50 characters",
-//           })
-//         });
-//                                   // Validate input
-//         const { error } = schema.validate({ name, category });
-//         if (error) {
-//           return res.status(400).json({ success: false, message: error.details[0].message });
-//         }
- 
 
-//     const newGroup = new Group({ order_id, name, category });
-//     await newGroup.save();
-
-//     res.status(201).json({
-//       success: true,
-//       message: "Group created successfully",
-//       group: newGroup
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Error creating group",
-//       error: error.message
-//     });
-//   }
-// };
-// 
-// ✅ Get All Groups
-
-// ✅ Get Single Group by ID
 export const getGroupById = async (req, res) => {
   try {
     const group = await Group.findById(req.params.id).populate("order_id");

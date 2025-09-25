@@ -243,6 +243,7 @@ export const moveGuestToNewGroup = async (req, res) => {
     const { guest_id, current_group_id, new_group_id, order_id } = req.body;
 
     // ---------------- Validation ----------------
+
     if (!guest_id || !current_group_id || !new_group_id || !order_id) {
       return res.status(400).json({
         success: false,
@@ -296,101 +297,6 @@ export const moveGuestToNewGroup = async (req, res) => {
 
 
 
-// export const moveMultipleGuests = async (req, res) => {
- 
-//   try {
-//     const { relation_id, relation_ids, to_group_id } = req.body;
-//     console.log(relation_id)
-//     console.log(relation_ids)
-//     console.log(to_group_id)
-
-//     // === Validation ===
-//     const incoming = Array.isArray(relation_ids) && relation_ids.length ? relation_ids
-//                     : (relation_id ? [relation_id] : []);
-//     if (!incoming.length) {
-//       return res.status(400).json({ success: false, message: 'relation_id or relation_ids is required' });
-//     }
-//     if (!to_group_id || !mongoose.Types.ObjectId.isValid(to_group_id)) {
-//       return res.status(400).json({ success: false, message: 'Valid to_group_id is required' });
-//     }
-
-//     // Validate each relation id
-//     for (const rid of incoming) {
-//       if (!mongoose.Types.ObjectId.isValid(rid)) {
-//         return res.status(400).json({ success: false, message: `Invalid relation_id: ${rid}` });
-//       }
-//     }
-
-//     const relationObjectIds = incoming.map(id => new mongoose.Types.ObjectId(id));
-// const toGroupObjectId = new mongoose.Types.ObjectId(to_group_id);
-
-//     // Fetch all relations
-//     const relations = await GuestGroupRelation.find({ _id: { $in: relationObjectIds } }).lean();
-//     if (!relations.length) {
-//       return res.status(404).json({ success: false, message: 'No relations found for provided relation_id(s)' });
-//     }
-
-//     // Ensure all relations belong to the same order
-//     const firstOrder = String(relations[0].order_id ?? relations[0].orderId ?? relations[0].order); // tolerant
-//     if (!relations.every(r => String(r.order_id ?? r.orderId ?? r.order) === firstOrder)) {
-//       return res.status(400).json({ success: false, message: 'All relations must belong to the same order' });
-//     }
-
-//     // Validate target group exists and belongs to same order
-//     const targetGroup = await Group.findById(toGroupObjectId).lean();
-//     if (!targetGroup) {
-//       return res.status(404).json({ success: false, message: 'Target group not found' });
-//     }
-//     const targetOrder = String(targetGroup.order_id ?? targetGroup.orderId ?? targetGroup.order);
-//     if (targetOrder !== firstOrder) {
-//       return res.status(400).json({ success: false, message: 'Target group does not belong to the same order as relations' });
-//     }
-
-//     // Prepare results
-//     const moved = [];
-//     const skipped = [];
-
-//     // Use transaction for safety (if the Mongo deployment supports it)
-//       // Process serially to keep logic simple and clear (could be parallelized carefully)
-//       for (const rel of relations) {
-//         // Look for duplicate in target: same guest + same order + same event (if event_id exists)
-//         const dupQuery = {
-//           guest_id: rel.guest_id,
-//           group_id: toGroupObjectId,
-//           order_id: rel.order_id ?? rel.orderId ?? rel.order
-//         };
-//         if (rel.event_id) dupQuery.event_id = rel.event_id;
-//         const updated = await GuestGroupRelation.findByIdAndUpdate(
-//           rel._id,
-//           { $set: { group_id: toGroupObjectId } },
-//         );
-
-//         // If update somehow fails due to uniqueness race, handle in catch below
-//         moved.push(updated);
-//       }
-
-
-//     return res.status(200).json({
-//       success: true,
-//       message: 'Move operation completed',
-//       counts: { moved: moved.length, skipped: skipped.length, requested: incoming.length },
-//       moved,
-//       skipped
-//     });
-
-//   } catch (err) {
-//     // Ensure session cleanup
-//     try { await session.abortTransaction(); } catch (e) { /* ignore */ }
-
-//     // Handle duplicate write error gracefully
-//     if (err && err.code === 11000) {
-//       return res.status(409).json({ success: false, message: 'Duplicate detected during move (race condition)', error: err.message });
-//     }
-
-//     console.error('moveRelationsByRelationIds error:', err);
-//     return res.status(500).json({ success: false, message: 'Internal Server Error', error: err.message });
-//   }
-// };
 
 
 
