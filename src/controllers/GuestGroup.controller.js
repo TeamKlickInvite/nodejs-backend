@@ -284,7 +284,7 @@ export const updateGroup = async (req, res) => {
       success: false,
       message: "Internal Server Error",
       error: error.message
-    });
+    }); 
   }
 };
 export const getGroupEvents = async (req, res) => {

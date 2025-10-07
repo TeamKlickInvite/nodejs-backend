@@ -20,6 +20,7 @@ const templateSchema = new mongoose.Schema({
   text_fields: [
     {
       label: { type: String, required: true }, // e.g., "Names"
+      
       default_text: { type: String, required: true }, // e.g., "Bride & Groom"
       x: { type: Number, required: true }, // x-coordinate from tap
       y: { type: Number, required: true }, // y-coordinate from tap

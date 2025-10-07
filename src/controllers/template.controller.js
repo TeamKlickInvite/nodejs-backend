@@ -116,3 +116,4 @@ export const filterTemplates = async (req, res) => {
     res.status(500).json({ error: 'failed to filter all template' });
   }
 };
+

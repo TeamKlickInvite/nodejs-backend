@@ -8,7 +8,7 @@ import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemp
  import { saveCustomization} from "../controllers/NewTemplate.controller.js"
  import { addGuest,updateGuest,deleteGuest,getGuestsByHost} from "../controllers/GuestBook.controller.js"
 import { createGroup,getGroupsByOrder,getGroupById,addEventToGroup,getGroupsByEvent,removeEventFromGroup,updateGroup,getGroupEvents,deleteGroup} from "../controllers/GuestGroup.controller.js";
-import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveGuestToNewGroup,getAvailableGuestsByGroup,removeGuestFromGroup} from '../controllers/GuestGroupRelation.controller.js'
+import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveGuestToNewGroup,getAvailableGuestsByOrder,removeGuestFromGroup} from '../controllers/GuestGroupRelation.controller.js'
 import {checkFrappeAuth} from '../middlewares/checkFrappeAuth.js'
 import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat,getMsgFormatsByGroup } from "../controllers/CustomMsgFormat.controller.js";
 import { submitRSVP } from "../controllers/Rsvp.controller.js";
@@ -28,15 +28,15 @@ router.delete('/deleteGuest/:guest_id',checkFrappeAuth,deleteGuest)
 router.put('/updateGuest/:guest_id',checkFrappeAuth,updateGuest)
 router.get("/getGuestsByHost/:host_id",checkFrappeAuth,getGuestsByHost)
 
-// GuestGroup
+// GuestGroup   
 router.post('/createGroup',checkFrappeAuth,createGroup)
 router.put("/addEventToGroup/:group_id",checkFrappeAuth,addEventToGroup)
 router.get("/getGroupsByOrder/:order_id",checkFrappeAuth,getGroupsByOrder)
 router.delete("/removeEventFromGroup/:group_id/:eventId",checkFrappeAuth,removeEventFromGroup)
 router.put("/updateGroup/:group_id",checkFrappeAuth,updateGroup)
 router.get("/getGroupsByEvent/:eventId",checkFrappeAuth,getGroupsByEvent)
-router.get("/getGroupEvents/:group_id",checkFrappeAuth,getGroupEvents)
-router.delete("/deleteGroup/:id",deleteGroup)
+router.get("/getGroupEvents/:group_id",checkFrappeAuth,getGroupEvents)//
+router.delete("/deleteGroup/:id",deleteGroup)//
 
 // GuestGroupRelation
 router.post('/addGuestsToGroup',checkFrappeAuth,addGuestsToGroup)
@@ -44,8 +44,7 @@ router.delete("/removeGuestFromGroup/:relation_id",checkFrappeAuth,removeGuestFr
 router.get("/getHostGroupGuests/:group_id",checkFrappeAuth,getHostGroupGuests)
 router.get("/invitedGuest/:order_id",checkFrappeAuth,invitedGuest)
 router.post("/moveMultipleGuests",checkFrappeAuth,moveGuestToNewGroup)
-router.get("/getAvailableGuestsByGroup/:host_id/:group_id",checkFrappeAuth,getAvailableGuestsByGroup)
-
+router.get("/getAvailableGuestsByOrder/:host_id/:order_id",checkFrappeAuth,getAvailableGuestsByOrder)
 
 // Msg FOrmate Api
 router.post("/createMsgFormat",checkFrappeAuth,createMsgFormat)

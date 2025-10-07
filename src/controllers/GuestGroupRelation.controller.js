@@ -376,7 +376,7 @@ export const sendInvitation = async (req, res) => {
           });
         } else if (medium === 'email') {
           await transporter.sendMail({
-            from: 'shekharara926290@gmail.com.com',
+            from: 'shekharara926290@gmail.com',
             to: contact.value,
             subject: 'KlickInvite Invitation',
             html: `${message} <a href="${relation.uniqueUrl}">View Invite</a>`
@@ -443,21 +443,22 @@ export const openInvitation = async (req, res) => {
 
 
 
-export const getAvailableGuestsByGroup = async (req, res) => {
+// controllers/guestGroupRelationController.js (Updated getAvailableGuestsByOrder)
+export const getAvailableGuestsByOrder = async (req, res) => {
   try {
-    const { host_id, group_id } = req.params;
+    const { host_id, order_id } = req.params;
 
     // --------------------
     // 1. Validate params
     // --------------------
-    if (!host_id || !group_id) {
+    if (!host_id || !order_id) {
       return res.status(400).json({
         success: false,
-        message: "host_id and group_id are required",
+        message: "host_id and order_id are required",
       });
     }
 
-    // host_id must be string, group_id must be ObjectId
+    // host_id must be string, order_id must be string (as per your schema)
     if (typeof host_id !== "string") {
       return res.status(400).json({
         success: false,
@@ -465,10 +466,10 @@ export const getAvailableGuestsByGroup = async (req, res) => {
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(group_id)) {
+    if (typeof order_id !== "string") {
       return res.status(400).json({
         success: false,
-        message: "Invalid group_id format",
+        message: "order_id must be a string",
       });
     }
 
@@ -487,21 +488,18 @@ export const getAvailableGuestsByGroup = async (req, res) => {
     }
 
     // --------------------
-    // 3. Fetch group relations
+    // 3. Fetch all relations for the order
     // --------------------
-    const groupRelations = await GuestGroupRelation.find({
-      group_id: new mongoose.Types.ObjectId(group_id),
-    })
+    const orderRelations = await GuestGroupRelation.find({ order_id })
       .select("guest_id")
       .lean();
-   
 
     const addedGuestIds = new Set(
-      groupRelations.map((rel) => rel.guest_id.toString())
+      orderRelations.map((rel) => rel.guest_id.toString())
     );
 
     // --------------------
-    // 4. Filter available guests
+    // 4. Filter available guests (not in any relation for this order)
     // --------------------
     const availableGuests = allGuests.filter(
       (guest) => !addedGuestIds.has(guest._id.toString())
@@ -510,7 +508,7 @@ export const getAvailableGuestsByGroup = async (req, res) => {
     if (!availableGuests.length) {
       return res.status(404).json({
         success: false,
-        message: "all guests are already added ",
+        message: "All guests are already added to relations for this order",
       });
     }
 
@@ -524,7 +522,7 @@ export const getAvailableGuestsByGroup = async (req, res) => {
       data: availableGuests,
     });
   } catch (error) {
-    console.error("Error in getAvailableGuestsByGroup:", error);
+    console.error("Error in getAvailableGuestsByOrder:", error);
 
     return res.status(500).json({
       success: false,
