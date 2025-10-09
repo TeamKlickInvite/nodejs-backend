@@ -308,148 +308,148 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// export const sendInvitation = async (req, res, next) => {
-//   try {
-//     const { guest_ids, medium, stage = 'invite' } = req.body;
-//     // Validate input
-//     if (!Array.isArray(guest_ids) || guest_ids.length === 0 ||
-//         !medium || !['email','sms','whatsapp'].includes(medium) ||
-//         !['preInvite','invite','reminder','thankyou'].includes(stage)) {
-//       return res.status(400).json({ success: false, message: 'Invalid input: guest_ids array, medium, or stage required' });
-//     }
+export const sendInvitation = async (req, res, next) => {
+  try {
+    const { guest_ids, medium, stage = 'invite' } = req.body;
+    // Validate input
+    if (!Array.isArray(guest_ids) || guest_ids.length === 0 ||
+        !medium || !['email','sms','whatsapp'].includes(medium) ||
+        !['preInvite','invite','reminder','thankyou'].includes(stage)) {
+      return res.status(400).json({ success: false, message: 'Invalid input: guest_ids array, medium, or stage required' });
+    }
 
-//     // Map medium and stage to numeric codes
-//     const mediumCode = medium === 'email' ? 1 : medium === 'sms' ? 2 : 3;
-//     const inviteTypeCode = stage === 'preInvite' ? 0 
-//                          : stage === 'invite'   ? 1 
-//                          : stage === 'reminder' ? 2 : 3;
+    // Map medium and stage to numeric codes
+    const mediumCode = medium === 'email' ? 1 : medium === 'sms' ? 2 : 3;
+    const inviteTypeCode = stage === 'preInvite' ? 0 
+                         : stage === 'invite'   ? 1 
+                         : stage === 'reminder' ? 2 : 3;
 
-//     const successfulGuests = [];
-//     const failedGuests = [];
-//     const totalGuests = guest_ids.length;
+    const successfulGuests = [];
+    const failedGuests = [];
+    const totalGuests = guest_ids.length;
 
-//     for (const guest_id of guest_ids) {
-//       let guestSuccess = true;
-//       try {
-//         const guest = await Guest.findById(guest_id);
-//         if (!guest) throw new Error('Guest not found');
+    for (const guest_id of guest_ids) {
+      let guestSuccess = true;
+      try {
+        const guest = await Guest.findById(guest_id);
+        if (!guest) throw new Error('Guest not found');
 
-//         const relations = await GuestGroupRelation.find({ guest_id: new mongoose.Types.ObjectId(guest_id) });
-//         if (relations.length === 0) throw new Error('No invite relations found for guest');
+        const relations = await GuestGroupRelation.find({ guest_id: new mongoose.Types.ObjectId(guest_id) });
+        if (relations.length === 0) throw new Error('No invite relations found for guest');
 
-//         // Process each group/relation for this guest
-//         for (const relation of relations) {
-//           // Skip if this stage is already sent
-//           if (relation.inviteStatus[stage]?.status == inviteTypeCode ) {
-//             guestSuccess = false;
-//             failedGuests.push({
-//               guest_id,
-//               medium,
-//               stage,
-//               message: 'Already invited for this stage'
-//             });
-//             continue; // don’t attempt to send again
-//           }
-//           // Load custom message template if any
-//           const customMsg = await CustomMsgFormatModels.findOne({
-//             order_id: relation.order_id,
-//             invite_type: inviteTypeCode
-//           });
-//           let finalMessage;
-//           if (customMsg && customMsg.msg_text) {
-//             finalMessage = customMsg.msg_text;
-//           } else {
-//             // No custom message: use a meaningful fallback
-//             const name = guest.displayName || guest.name || 'Guest';
-//             // (Optionally fetch event/order name using relation.order_id if needed here)
-//             finalMessage = `Hello ${name}, you are invited! Please view your invitation here: ${relation.uniqueUrl}`;
-//           }
+        // Process each group/relation for this guest
+        for (const relation of relations) {
+          // Skip if this stage is already sent
+          if (relation.inviteStatus[stage]?.status == inviteTypeCode ) {
+            guestSuccess = false;
+            failedGuests.push({
+              guest_id,
+              medium,
+              stage,
+              message: 'Already invited for this stage'
+            });
+            continue; // don’t attempt to send again
+          }
+          // Load custom message template if any
+          const customMsg = await CustomMsgFormatModels.findOne({
+            order_id: relation.order_id,
+            invite_type: inviteTypeCode
+          });
+          let finalMessage;
+          if (customMsg && customMsg.msg_text) {
+            finalMessage = customMsg.msg_text;
+          } else {
+            // No custom message: use a meaningful fallback
+            const name = guest.displayName || guest.name || 'Guest';
+            // (Optionally fetch event/order name using relation.order_id if needed here)
+            finalMessage = `Hello ${name}, you are invited! Please view your invitation here: ${relation.uniqueUrl}`;
+          }
 
-//           // Replace placeholders in message (e.g. {{guest_name}}, {{guest_url}})
-//           finalMessage = finalMessage
-//             .replace(/\{\{guest_name\}\}/g, guest.displayName || guest.name || '')
-//             .replace(/\{\{guest_url\}\}/g, relation.uniqueUrl);
+          // Replace placeholders in message (e.g. {{guest_name}}, {{guest_url}})
+          finalMessage = finalMessage
+            .replace(/\{\{guest_name\}\}/g, guest.displayName || guest.name || '')
+            .replace(/\{\{guest_url\}\}/g, relation.uniqueUrl);
 
-//           // Find the appropriate contact (email or mobile) for this medium
-//           const contactType = (medium === 'email' ? 'email' : 'mobile');
-//           const contact = guest.contacts.find(c => c.type === contactType);
-//           if (!contact || !contact.value) {
-//             throw new Error(`No contact of type '${contactType}' found for guest`);
-//           }
+          // Find the appropriate contact (email or mobile) for this medium
+          const contactType = (medium === 'email' ? 'email' : 'mobile');
+          const contact = guest.contacts.find(c => c.type === contactType);
+          if (!contact || !contact.value) {
+            throw new Error(`No contact of type '${contactType}' found for guest`);
+          }
 
-//           // Attempt to send the message via Twilio or email
-//           try {
-//             if (medium === 'sms' || medium === 'whatsapp') {
-//               const fromNumber = medium === 'whatsapp'
-//                 ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
-//                 : process.env.TWILIO_NUMBER;
-//               const toNumber = medium === 'whatsapp'
-//                 ? `whatsapp:${contact.value}`
-//                 : contact.value;
+          // Attempt to send the message via Twilio or email
+          try {
+            if (medium === 'sms' || medium === 'whatsapp') {
+              const fromNumber = medium === 'whatsapp'
+                ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
+                : process.env.TWILIO_NUMBER;
+              const toNumber = medium === 'whatsapp'
+                ? `whatsapp:${contact.value}`
+                : contact.value;
 
-//               await twilioClient.messages.create({
-//                 body: finalMessage,
-//                 from: fromNumber,
-//                 to: toNumber
-//               });
-//             } else if (medium === 'email') {
-//               await transporter.sendMail({
-//                 from: 'shekharara926290@gmail.com', // use verified sender
-//                 to: contact.value,
-//                 subject: 'KlickInvite Invitation',
-//                 html: finalMessage
-//               });
-//             }
-//           } catch (sendError) {
-//             // Log/send error for this relation, but continue processing other relations
-//             guestSuccess = false;
-//             failedGuests.push({
-//               guest_id,
-//               medium,
-//               stage,
-//               message: `Sending failed: ${sendError.message}`
-//             });
-//             continue; // skip updating status for this relation
-//           }
+              await twilioClient.messages.create({
+                body: finalMessage,
+                from: fromNumber,
+                to: toNumber
+              });
+            } else if (medium === 'email') {
+              await transporter.sendMail({
+                from: 'shekharara926290@gmail.com', // use verified sender
+                to: contact.value,
+                subject: 'KlickInvite Invitation',
+                html: finalMessage
+              });
+            }
+          } catch (sendError) {
+            // Log/send error for this relation, but continue processing other relations
+            guestSuccess = false;
+            failedGuests.push({
+              guest_id,
+              medium,
+              stage,
+              message: `Sending failed: ${sendError.message}`
+            });
+            continue; // skip updating status for this relation
+          }
 
-//           // Update invite status on successful send
-//           relation.inviteStatus[stage].status = 1;
-//           relation.inviteStatus[stage].medium = mediumCode;
-//           relation.inviteStatus[stage].sentAt = new Date();
-//           await relation.save();
-//         }
+          // Update invite status on successful send
+          relation.inviteStatus[stage].status = 1;
+          relation.inviteStatus[stage].medium = mediumCode;
+          relation.inviteStatus[stage].sentAt = new Date();
+          await relation.save();
+        }
 
-//         if (guestSuccess) {
-//           successfulGuests.push({ guest_id });
-//         }
-//       } catch (err) {
-//         // Failed to process this guest at some point
-//         guestSuccess = false;
-//         failedGuests.push({ guest_id, message: err.message });
-//       }
+        if (guestSuccess) {
+          successfulGuests.push({ guest_id });
+        }
+      } catch (err) {
+        // Failed to process this guest at some point
+        guestSuccess = false;
+        failedGuests.push({ guest_id, message: err.message });
+      }
 
-//       // Note: guest is either in successfulGuests or failedGuests
-//     }
+      // Note: guest is either in successfulGuests or failedGuests
+    }
 
-//     // Respond with summary
-//     res.json({
-//       success: true,
-//       message: 'Invitations processed',
-//       data: {
-//         total: totalGuests,
-//         successfulCount: successfulGuests.length,
-//         failedCount: failedGuests.length,
-//         failed: failedGuests
-//       }
-//     });
-//   } catch (error) {
-//     // Unexpected error: pass to Express error handler or send generic failure
-//     console.error('Error in sendInvitation:', error);
-//     // In production, do not expose internal error details
-//     res.status(500).json({ success: false, message: 'Error sending invitations' });
-//     // Or use `next(error)` to delegate to Express error-handling middleware
-//   }
-// };
+    // Respond with summary
+    res.json({
+      success: true,
+      message: 'Invitations processed',
+      data: {
+        total: totalGuests,
+        successfulCount: successfulGuests.length,
+        failedCount: failedGuests.length,
+        failed: failedGuests
+      }
+    });
+  } catch (error) {
+    // Unexpected error: pass to Express error handler or send generic failure
+    console.error('Error in sendInvitation:', error);
+    // In production, do not expose internal error details
+    res.status(500).json({ success: false, message: 'Error sending invitations' });
+    // Or use `next(error)` to delegate to Express error-handling middleware
+  }
+};
 
 // controllers/invitationController.js
 // export const sendInvitation = async (req, res) => {
