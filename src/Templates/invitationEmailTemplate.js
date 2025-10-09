@@ -1,5 +1,5 @@
-export const invitationEmailTemplate = (guestName, customMsgHTML, inviteLink) => `
-<!DOCTYPE html>
+export const invitationEmailTemplate = (guestName,finalMessage,inviteLink) => 
+`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -63,13 +63,13 @@ export const invitationEmailTemplate = (guestName, customMsgHTML, inviteLink) =>
 <body>
 
   <div class="header">
-    Dear ${guestName}
+     Dear ${guestName}
   </div>
 
   <div class="content">
     <img src="https://res.cloudinary.com/dcgfj2uww/image/upload/v1753438705/templates/pImage-1753438702248-534239146.jpg" alt="Save the Date">
     <div class="message">
-      ${customMsgHTML}
+      ${finalMessage}
     </div>
 
     <a href="${inviteLink}" class="button" target="_blank">View Invitation</a>

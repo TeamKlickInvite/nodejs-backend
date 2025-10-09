@@ -73,11 +73,8 @@ export const createGroup = async (req, res) => {
 
 export const addEventToGroup = async (req, res) => {
   try {
-    console.log("🟢 Incoming Request =>", { params: req.params, query: req.query, body: req.body, headers: req.headers });
-    console.log("only body",req.body);
     const { group_id } = req.params;
     const { eventIds } = req.body; // ✅ Array of eventIds
-
     if (!Array.isArray(eventIds) || eventIds.length === 0) {
       return res.status(400).json({
         success: false,

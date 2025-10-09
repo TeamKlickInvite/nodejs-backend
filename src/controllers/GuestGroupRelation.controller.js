@@ -5,6 +5,7 @@ import Group from "../models/GuestGroup.models.js"
 import shortid from "shortid";
 import { Guest } from '../models/GuestBook.models.js';
 import CustomMsgFormatModels from '../models/CustomMsgFormat.models.js';
+import { invitationEmailTemplate } from '../Templates/invitationEmailTemplate.js';
 import twilio from 'twilio';
 import nodemailer from 'nodemailer';
 
@@ -369,6 +370,12 @@ export const sendInvitation = async (req, res, next) => {
           finalMessage = finalMessage
             .replace(/\{\{guest_name\}\}/g, guest.displayName || guest.name || '')
             .replace(/\{\{guest_url\}\}/g, relation.uniqueUrl);
+          
+          const guestName = guest.displayName || guest.name || 'Guest';
+          const inviteLink = relation.uniqueUrl;
+          
+          const finalHTML = invitationEmailTemplate(guestName,finalMessage,inviteLink);
+          console.log(finalHTML);
 
           // Find the appropriate contact (email or mobile) for this medium
           const contactType = (medium === 'email' ? 'email' : 'mobile');
@@ -397,7 +404,7 @@ export const sendInvitation = async (req, res, next) => {
                 from: 'shekharara926290@gmail.com', // use verified sender
                 to: contact.value,
                 subject: 'KlickInvite Invitation',
-                html: finalMessage
+                html: finalHTML
               });
             }
           } catch (sendError) {
