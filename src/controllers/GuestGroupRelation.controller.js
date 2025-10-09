@@ -311,6 +311,7 @@ const transporter = nodemailer.createTransport({
 
 export const sendInvitation = async (req, res, next) => {
   try {
+    console.log(req.body);
     const { guest_ids, medium, stage = 'invite' } = req.body;
     // Validate input
     if (!Array.isArray(guest_ids) || guest_ids.length === 0 ||
