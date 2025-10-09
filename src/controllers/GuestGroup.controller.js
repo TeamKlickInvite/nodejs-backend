@@ -76,6 +76,7 @@ export const createGroup = async (req, res) => {
 export const addEventToGroup = async (req, res) => {
   try {
     const { group_id } = req.params;
+    console.log(req.body);
     const { eventIds } = req.body; // ✅ Array of eventIds
 
     if (!Array.isArray(eventIds) || eventIds.length === 0) {

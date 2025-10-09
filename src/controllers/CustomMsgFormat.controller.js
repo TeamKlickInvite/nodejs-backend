@@ -124,8 +124,10 @@ export const getMsgFormatsByGroup = async (req, res) => {
  * --------------------------- */
 export const updateMsgFormat = async (req, res) => {
   try {
+   console.log("Full Request:", JSON.stringify(req, null, 2));
     const { msg_id } = req.params;
     const { msg_text } = req.body;
+    console.log(msg_id);
 
     if (!isValidObjectId(msg_id)) {
       return sendResponse(res, 400, false, 'Invalid msg_id format');
