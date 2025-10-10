@@ -323,6 +323,7 @@ export const deleteGroup = async (req, res) => {
   try {
     console.log(req.params)
     const { group_id } = req.params;
+    console.log(group_id);
 
     // --------------------
     // 1. Validate params
