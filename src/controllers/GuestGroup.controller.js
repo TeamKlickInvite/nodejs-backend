@@ -1,6 +1,7 @@
 import Group from "../models/GuestGroup.models.js"
 import Joi from "joi"
 import mongoose from "mongoose";
+import GuestGroupRelationModels from "../models/GuestGroupRelation.models.js";
 
 
 export const getGroupsByOrder = async (req, res) => {
@@ -319,24 +320,62 @@ export const getGroupEvents = async (req, res) => {
 // ✅ Delete Group
 export const deleteGroup = async (req, res) => {
   try {
-    const deletedGroup = await Group.findByIdAndDelete(req.params.id);
+    const { group_id } = req.params;
 
-    if (!deletedGroup) {
-      return res.status(404).json({
+    // --------------------
+    // 1. Validate params
+    // --------------------
+    if (!group_id) {
+      return res.status(400).json({
         success: false,
-        message: "Group not found"
+        message: "group_id is required",
       });
     }
 
-    res.status(200).json({
+    if (!mongoose.Types.ObjectId.isValid(group_id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid group_id format",
+      });
+    }
+
+    // --------------------
+    // 2. Check for existing relations
+    // --------------------
+    const relations = await GuestGroupRelationModels.find({ group_id: new mongoose.Types.ObjectId(group_id) });
+    if (relations.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Guests exist, cannot delete the group",
+      });
+    }
+
+    // --------------------
+    // 3. Delete the group
+    // --------------------
+    const deletedGroup = await Group.findByIdAndDelete(group_id);
+    if (!deletedGroup) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+
+    // --------------------
+    // 4. Response
+    // --------------------
+    return res.status(200).json({
       success: true,
-      message: "Group deleted successfully"
+      message: "Group deleted successfully",
+      data: { group_id: deletedGroup._id },
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Error in deleteGroup:", error);
+
+    return res.status(500).json({
       success: false,
-      message: "Error deleting group",
-      error: error.message
+      message: "Internal server error while deleting group",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
