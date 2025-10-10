@@ -67,7 +67,7 @@ export const invitationEmailTemplate = (guestName,finalMessage,inviteLink) =>
   </div>
 
   <div class="content">
-    <img src="https://res.cloudinary.com/dcgfj2uww/image/upload/v1753438705/templates/pImage-1753438702248-534239146.jpg" alt="Save the Date">
+    <img src="https://res.cloudinary.com/dcgfj2uww/image/upload/v1760080662/templates/Website-image-1760080660304-253486374.png" alt="Save the Date">
     <div class="message">
       ${finalMessage}
     </div>
@@ -75,7 +75,7 @@ export const invitationEmailTemplate = (guestName,finalMessage,inviteLink) =>
     <a href="${inviteLink}" class="button" target="_blank">View Invitation</a>
 
     <div class="footer">
-      <img src="https://res.cloudinary.com/dcgfj2uww/image/upload/v1753438705/templates/pImage-1753438702248-534239146.jpg" alt="KlickInvite Logo">
+      <img src="https://res.cloudinary.com/dcgfj2uww/image/upload/v1760080661/templates/Website-image-2-1760080660302-200113678.png" alt="KlickInvite Logo">
       <p style="font-size: 13px; color:#666;">DIGITAL INVITATION FOR EVERY OCCASION</p>
       <div class="social-icons">
         <a href="https://facebook.com"><img src="https://yourcdn.com/fb.png" alt="Facebook"></a>
