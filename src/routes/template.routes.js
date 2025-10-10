@@ -36,7 +36,7 @@ router.delete("/removeEventFromGroup/:group_id/:eventId",checkFrappeAuth,removeE
 router.put("/updateGroup/:group_id",checkFrappeAuth,updateGroup)
 router.get("/getGroupsByEvent/:eventId",checkFrappeAuth,getGroupsByEvent)
 router.get("/getGroupEvents/:group_id",checkFrappeAuth,getGroupEvents)//
-router.delete("/deleteGroup/:id",deleteGroup)//
+router.delete("/deleteGroup/:group_id",deleteGroup)//
 
 // GuestGroupRelation
 router.post('/addGuestsToGroup',checkFrappeAuth,addGuestsToGroup)
