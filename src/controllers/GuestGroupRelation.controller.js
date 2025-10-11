@@ -389,8 +389,8 @@ export const sendInvitation = async (req, res, next) => {
           try {
             if (medium === 'sms' || medium === 'whatsapp') {
               const fromNumber = medium === 'whatsapp'
-                ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
-                : process.env.TWILIO_NUMBER;
+                ? `whatsapp:${process.env.NUMBER}`
+                : process.env.NUMBER;
               const toNumber = medium === 'whatsapp'
                 ? `whatsapp:${contact.value}`
                 : contact.value;
