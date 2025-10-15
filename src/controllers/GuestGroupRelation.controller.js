@@ -57,7 +57,7 @@ export const addGuestsToGroup = async (req, res) => {
       guest_id: new mongoose.Types.ObjectId(gid),
       group_id: new mongoose.Types.ObjectId(group_id),
       order_id, // keep as string
-      uniqueUrl: `https://klickinvite.com/invite/${shortid.generate()}`,
+      uniqueCode: shortid.generate(),
       inviteStatus: {
         preInvite: {},
         invite: {},
