@@ -29,6 +29,7 @@ router.put('/updateGuest/:guest_id',checkFrappeAuth,updateGuest)
 router.get("/getGuestsByHost/:host_id",checkFrappeAuth,getGuestsByHost)
 
 // GuestGroup    
+router.post("createGroup",checkFrappeAuth,createGroup)
 router.put("/addEventToGroup/:group_id",checkFrappeAuth,addEventToGroup)
 router.get("/getGroupsByOrder/:order_id",checkFrappeAuth,getGroupsByOrder)
 router.delete("/removeEventFromGroup/:group_id/:eventId",checkFrappeAuth,removeEventFromGroup)
@@ -57,7 +58,7 @@ router.delete("/deleteMsgFormat/:msg_id",checkFrappeAuth,deleteMsgFormat)
 // Invitaions APi
 router.post("/sendInvitation",checkFrappeAuth,sendInvitation)
 router.get("/getGroupById/:id",checkFrappeAuth,getGroupById)
-router.get("/openInvite/:uniqueUrl",openInvite)
+router.get("/openInvite/:",openInvite)
 
 // RSVP API
 router.post("/submitRSVP",checkFrappeAuth,submitRSVP)
