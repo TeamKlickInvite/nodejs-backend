@@ -66,7 +66,7 @@ export const uploadTemplate = async (req, res) => {
                       // Read HTML file asynchronously
     const baseHtml = await fs.readFile(htmlFile.path, "utf8");  
 
-                      // Create and save Template
+                      // Create and save Template 
     const newTemplate = new Template({
       title,
       category,

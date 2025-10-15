@@ -370,7 +370,7 @@ export const sendInvitation = async (req, res, next) => {
           // Replace placeholders in message (e.g. {{guest_name}}, {{guest_url}})
           finalMessage = finalMessage
             .replace(/\{\{guest_name\}\}/g, guest.displayName || guest.name || '')
-            .replace(/\{\{guest_url\}\}/g, relation.uniqueUrl);
+            .replace(/\{\{guest_url\}\}/g, relation.inviteUrl);
           
           const guestName = guest.displayName || guest.name || 'Guest';
           const inviteLink = relation.uniqueUrl;
@@ -628,45 +628,88 @@ export const sendInvitation = async (req, res, next) => {
 // };
 
 // Add to invitationController.js or new file
-export const openInvitation = async (req, res) => {
+// controllers/invitationController.js
+
+
+export const openInvite = async (req, res) => {
   try {
     const { uniqueUrl } = req.params;
+    if (!uniqueUrl) {
+      return res.status(400).json({ success: false, message: 'Invalid unique URL' });
+    }
+
     const relation = await GuestGroupRelation.findOne({ uniqueUrl });
     if (!relation) {
-      return res.status(404).json({ message: 'Invalid or expired URL' });
+      return res.status(404).json({ success: false, message: 'Invalid or expired invitation link' });
     }
 
-    // Edge case: Max views exceeded
     if (relation.views >= relation.maxViewsPerGuest) {
-                                                                                                                                                                                                                                                       
-      return res.status(403).json({ message: 'View limit exceeded' });
+      return res.status(403).json({ success: false, message: 'View limit exceeded' });
     }
 
-    // Update views and status (e.g., to opened if not already)
+    // Update view count and status
     if (relation.inviteStatus.invite.status < 2) {
-      relation.inviteStatus.invite.status = 2; // opened
-      relation.inviteStatus.invite.sentAt = new Date(); // update if needed
+      relation.inviteStatus.invite.status = 2;
+      relation.inviteStatus.invite.sentAt = new Date();
     }
     relation.views += 1;
     await relation.save();
 
-    // Fetch related data (guest, group, order)
-    const populatedRelation = await GuestGroupRelation.findOne({ uniqueUrl })
-      .populate('guest_id', 'name contacts') // Get guest details
-      .populate('group_id', 'name settings'); // Get group with settings
+    // Fetch guest details
+    const guest = await Guest.findById(relation.guest_id).select('name displayName contacts');
+    if (!guest) {
+      return res.status(404).json({ success: false, message: 'Guest not found' });
+    }
 
-    res.json({
+    // Fetch group details
+    const group = await Group.findById(relation.group_id).select('name order_id settings events');
+    if (!group) {
+      return res.status(404).json({ success: false, message: 'Group not found' });
+    }
+
+    // // Fetch event details from Frappe (minimal call for open invite)
+    // let events = [];
+    // if (group.events && group.events.length > 0) {
+    //   const eventPromises = group.events.map(eventId =>
+    //     axios.get(`https://frappe.klickinvite.com/api/resource/Event/${eventId}`, {
+    //       headers: { Authorization: `token ${process.env.FRAPPE_API_KEY}:${process.env.FRAPPE_API_SECRET}` }
+    //     })
+    //   );
+    //   const eventResponses = await Promise.all(eventPromises);
+    //   events = eventResponses.map(res => res.data.data).filter(event => event); // Filter out any failed fetches
+    // }
+
+    // Prepare response with all details
+    const responseData = {
+      success: true,
       message: 'Invitation opened',
-      guest: populatedRelation.guest_id,
-      group: populatedRelation.group_id,
-      inviteStatus: populatedRelation.inviteStatus,
-      views: populatedRelation.views
-    });
+      data: {
+        uniqueUrl: relation.uniqueUrl,
+        guest: {
+          id: guest._id,
+          name: guest.name,
+          displayName: guest.displayName,
+          contacts: guest.contacts
+        },
+        group: {
+          id: group._id,
+          name: group.name,
+          order_id: group.order_id,
+          settings: group.settings,
+          events: group.events // Frappe event IDs
+        },
+        // eventDetails: events, // Enriched event data from Frappe (name, date, etc.)
+        inviteStatus: relation.inviteStatus,
+        views: relation.views,
+        maxViewsPerGuest: relation.maxViewsPerGuest
+      }
+    };
+
+    res.json(responseData);
   } catch (error) {
-    res.status(500).json({ message: 'Error opening invitation', error: error.message });
+    res.status(500).json({ success: false, message: 'Error opening invitation', error: error.message });
   }
 };
-
 
 
 // controllers/guestGroupRelationController.js (Updated getAvailableGuestsByOrder)

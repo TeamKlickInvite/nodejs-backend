@@ -19,7 +19,7 @@ const GuestGroupRelationSchema = new Schema({
   uniqueUrl: {
     type: String,
     unique: true,
-    default: () => `https://klickinvite.com/invite/${shortid.generate()}`,
+    default: () => shortid.generate(),
   },
 
   inviteStatus: {
@@ -38,6 +38,10 @@ GuestGroupRelationSchema.index(
   { order_id: 1, group_id: 1, guest_id: 1, event_id: 1 },
   { unique: true }
 );
+
+GuestGroupRelationSchema.virtual("inviteUrl").get(function () {
+  return `https://klickinvite.com/invite/${this.uniqueUrl}`;
+});
 
 export default models.GuestGroupRelation ||
   model("GuestGroupRelation", GuestGroupRelationSchema);

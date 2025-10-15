@@ -8,7 +8,7 @@ import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemp
  import { saveCustomization} from "../controllers/NewTemplate.controller.js"
  import { addGuest,updateGuest,deleteGuest,getGuestsByHost} from "../controllers/GuestBook.controller.js"
 import { createGroup,getGroupsByOrder,getGroupById,addEventToGroup,getGroupsByEvent,removeEventFromGroup,updateGroup,getGroupEvents,deleteGroup} from "../controllers/GuestGroup.controller.js";
-import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveGuestToNewGroup,getAvailableGuestsByOrder,removeGuestFromGroup} from '../controllers/GuestGroupRelation.controller.js'
+import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveGuestToNewGroup,getAvailableGuestsByOrder,removeGuestFromGroup,openInvite} from '../controllers/GuestGroupRelation.controller.js'
 import {checkFrappeAuth} from '../middlewares/checkFrappeAuth.js'
 import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat,getMsgFormatsByGroup } from "../controllers/CustomMsgFormat.controller.js";
 import { submitRSVP } from "../controllers/Rsvp.controller.js";
@@ -57,6 +57,7 @@ router.delete("/deleteMsgFormat/:msg_id",checkFrappeAuth,deleteMsgFormat)
 // Invitaions APi
 router.post("/sendInvitation",checkFrappeAuth,sendInvitation)
 router.get("/getGroupById/:id",checkFrappeAuth,getGroupById)
+router.get("/openInvite/:uniqueUrl",openInvite)
 
 // RSVP API
 router.post("/submitRSVP",checkFrappeAuth,submitRSVP)
