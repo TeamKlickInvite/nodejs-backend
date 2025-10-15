@@ -39,9 +39,9 @@ GuestGroupRelationSchema.index(
   { unique: true }
 );
 
-GuestGroupRelationSchema.virtual("inviteUrl").get(function () {
-  return `https://klickinvite.com/invite/${this.uniqueCode}`;
-});
+// GuestGroupRelationSchema.virtual("inviteUrl").get(function () {
+//   return `https://klickinvite.com/invite/${this.uniqueCode}`;
+// });
 
 export default models.GuestGroupRelation ||
   model("GuestGroupRelation", GuestGroupRelationSchema);
