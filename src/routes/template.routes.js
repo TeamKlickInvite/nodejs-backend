@@ -58,7 +58,7 @@ router.delete("/deleteMsgFormat/:msg_id",checkFrappeAuth,deleteMsgFormat)
 // Invitaions APi
 router.post("/sendInvitation",checkFrappeAuth,sendInvitation)
 router.get("/getGroupById/:id",checkFrappeAuth,getGroupById)
-router.get("/openInvite/:",openInvite)
+router.get("/openInvite/:uniqueUrl",openInvite)
 
 // RSVP API
 router.post("/submitRSVP",checkFrappeAuth,submitRSVP)
