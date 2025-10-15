@@ -16,10 +16,10 @@ const GuestGroupRelationSchema = new Schema({
   guest_id: { type: Schema.Types.ObjectId, ref: "Guest", required: true },
   group_id: { type: Schema.Types.ObjectId, ref: "Group", required: true },
   order_id: { type: String, required: true }, 
-  uniqueUrl: {
+  uniqueCode: {
     type: String,
     unique: true,
-    default: () => shortid.generate(),
+    default: () =>shortid.generate(),
   },
 
   inviteStatus: {
@@ -40,7 +40,7 @@ GuestGroupRelationSchema.index(
 );
 
 GuestGroupRelationSchema.virtual("inviteUrl").get(function () {
-  return `https://klickinvite.com/invite/${this.uniqueUrl}`;
+  return `https://klickinvite.com/invite/${this.uniqueCode}`;
 });
 
 export default models.GuestGroupRelation ||
