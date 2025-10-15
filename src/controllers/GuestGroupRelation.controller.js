@@ -633,12 +633,12 @@ export const sendInvitation = async (req, res, next) => {
 
 export const openInvite = async (req, res) => {
   try {
-    const { uniqueUrl } = req.params;
-    if (!uniqueUrl) {
+    const { uniqueCode } = req.params;
+    if (!uniqueCode) {
       return res.status(400).json({ success: false, message: 'Invalid unique URL' });
     }
 
-    const relation = await GuestGroupRelation.findOne({ uniqueUrl });
+    const relation = await GuestGroupRelation.findOne({ uniqueCode });
     if (!relation) {
       return res.status(404).json({ success: false, message: 'Invalid or expired invitation link' });
     }
