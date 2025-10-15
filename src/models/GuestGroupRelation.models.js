@@ -35,7 +35,7 @@ const GuestGroupRelationSchema = new Schema({
 
 // unique per guest/group/order/event
 GuestGroupRelationSchema.index(
-  { order_id: 1, group_id: 1, guest_id: 1, event_id: 1 },
+  { order_id: 1, group_id: 1, guest_id: 1 },
   { unique: true }
 );
 
