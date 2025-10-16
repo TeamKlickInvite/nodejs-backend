@@ -480,7 +480,7 @@ export const getWhatsappMsgForInvitedGuests = async (req, res) => {
         const guest = await Guest.findById(relation.guest_id).select('name').lean();
         const guestName = guest ? guest.name : 'Guest';
         const finalMessage = customMsg.msg_text
-           .replace(/\{\{guest_name\}\}/g, guest.displayName || guest.name || '')
+           .replace(/\{\{guest_name\}\}/g, guest.displayName || guestName|| '')
             .replace(/\{\{guest_url\}\}/g, relation.inviteUrl);
         results.push({ guest_id: relation.guest_id, final_whatsapp_msg: finalMessage });
       } else {
