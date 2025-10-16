@@ -468,7 +468,8 @@ export const getWhatsappMsgForInvitedGuests = async (req, res) => {
     }
 
     // Fetch all relations for the order
-    const relations = await GuestGroupRelation.find({ order_id }).select('group_id guest_id uniqueUrl').lean();
+    const relations = await GuestGroupRelation.find({ order_id });
+
     if (!relations.length) {
       return res.status(404).json({ success: false, message: 'No invited guests found for this order' });
     }
@@ -483,7 +484,7 @@ export const getWhatsappMsgForInvitedGuests = async (req, res) => {
         console.log(guest)
         const guestName = guest ? guest.name : 'Guest';
         console.log(guestName)
-        const finalMessage = customMsg.msg_text
+        const finalMessage = customMsg.msg_text 
            .replace(/\{\{guest_name\}\}/g, guest.displayName || guestName|| '')
             .replace(/\{\{guest_url\}\}/g, relation.inviteUrl);
         console.log(finalMessage)
