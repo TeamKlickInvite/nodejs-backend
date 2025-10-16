@@ -476,7 +476,7 @@ export const getWhatsappMsgForInvitedGuests = async (req, res) => {
     const results = [];
     for (const relation of relations) {
       // Fetch custom msg for WhatsApp (medium = 3) for the group
-      const customMsg = await CustomMsgFormat.findOne({ order_id, group_id: new mongoose.Types.ObjectId(relation.group_id), msg_medium: 3 });
+      const customMsg = await CustomMsgFormatModels.findOne({ order_id, group_id: new mongoose.Types.ObjectId(relation.group_id), msg_medium: 3 });
       console.log(customMsg);
       if (customMsg) {
         const guest = await Guest.findById(relation.guest_id).select('name').lean();
