@@ -10,7 +10,7 @@ import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemp
 import { createGroup,getGroupsByOrder,getGroupById,addEventToGroup,getGroupsByEvent,removeEventFromGroup,updateGroup,getGroupEvents,deleteGroup} from "../controllers/GuestGroup.controller.js";
 import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveGuestToNewGroup,getAvailableGuestsByOrder,removeGuestFromGroup,openInvite} from '../controllers/GuestGroupRelation.controller.js'
 import {checkFrappeAuth} from '../middlewares/checkFrappeAuth.js'
-import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat,getMsgFormatsByGroup } from "../controllers/CustomMsgFormat.controller.js";
+import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat,getMsgFormatsByGroup,getWhatsappMsgForGroup } from "../controllers/CustomMsgFormat.controller.js";
 import { submitRSVP } from "../controllers/Rsvp.controller.js";
 
 
@@ -52,6 +52,7 @@ router.get("/getMsgFormatsByGroup/:group_id",checkFrappeAuth,getMsgFormatsByGrou
 router.get("/getMsgFormatsByOrder/:order_id",checkFrappeAuth,getMsgFormatsByOrder)
 router.put("/updateMsgFormat/:msg_id",checkFrappeAuth,updateMsgFormat)
 router.delete("/deleteMsgFormat/:msg_id",checkFrappeAuth,deleteMsgFormat)
+router.get("/getWhatsappMsgForGroup/:order_id/:group_id",getWhatsappMsgForGroup)
 
 
 

@@ -179,3 +179,69 @@ export const deleteMsgFormat = async (req, res) => {
     return sendResponse(res, 500, false, 'Internal server error', null, error.message);
   }
 };
+
+// controllers/customMsgFormatController.js (New API for WhatsApp Msg Check)
+
+export const getWhatsappMsgForGroup = async (req, res) => {
+  try {
+    const { order_id, group_id } = req.params;
+
+    // --------------------
+    // 1. Validate params
+    // --------------------
+    if (!order_id || !group_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'order_id and group_id are required',
+      });
+    }
+
+    if (typeof order_id !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'order_id must be a string',
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(group_id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid group_id format',
+      });
+    }
+
+    // --------------------
+    // 2. Check for WhatsApp custom msg format
+    // --------------------
+    const whatsappMsg = await CustomMsgFormat.findOne({
+      order_id,
+      group_id: new mongoose.Types.ObjectId(group_id),
+      msg_medium: 3, // WhatsApp
+    });
+
+    if (whatsappMsg) {
+      return res.status(200).json({
+        success: true,
+        message: 'WhatsApp message format found',
+        data: {
+          whatsapp_msg: whatsappMsg.msg_text,
+          order_id: whatsappMsg.order_id,
+          group_id: whatsappMsg.group_id,
+          invite_type: whatsappMsg.invite_type,
+        },
+      });
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: 'No WhatsApp message format found for this group. Please create a WhatsApp msg format first',
+      });
+    }
+  } catch (error) {
+    console.error('Error in getWhatsappMsgForGroup:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error while fetching WhatsApp msg format',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};
