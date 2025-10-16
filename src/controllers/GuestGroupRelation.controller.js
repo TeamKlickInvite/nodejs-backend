@@ -460,6 +460,7 @@ export const sendInvitation = async (req, res, next) => {
 };
 
 export const getWhatsappMsgForInvitedGuests = async (req, res) => {
+  console.log( req.params)
   try {
     const { order_id } = req.params;
     if (!order_id) {
