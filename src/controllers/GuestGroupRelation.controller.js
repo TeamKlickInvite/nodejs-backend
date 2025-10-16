@@ -459,6 +459,41 @@ export const sendInvitation = async (req, res, next) => {
   }
 };
 
+export const getWhatsappMsgForInvitedGuests = async (req, res) => {
+  try {
+    const { order_id } = req.params;
+    if (!order_id) {
+      return res.status(400).json({ success: false, message: 'order_id is required' });
+    }
+
+    // Fetch all relations for the order
+    const relations = await GuestGroupRelation.find({ order_id }).select('group_id guest_id uniqueUrl').lean();
+    if (!relations.length) {
+      return res.status(404).json({ success: false, message: 'No invited guests found for this order' });
+    }
+
+    const results = [];
+    for (const relation of relations) {
+      // Fetch custom msg for WhatsApp (medium = 3) for the group
+      const customMsg = await CustomMsgFormat.findOne({ order_id, group_id: new mongoose.Types.ObjectId(relation.group_id), msg_medium: 3 });
+      if (customMsg) {
+        const guest = await Guest.findById(relation.guest_id).select('name').lean();
+        const guestName = guest ? guest.name : 'Guest';
+        const finalMessage = customMsg.msg_text
+           .replace(/\{\{guest_name\}\}/g, guest.displayName || guest.name || '')
+            .replace(/\{\{guest_url\}\}/g, relation.inviteUrl);
+        results.push({ guest_id: relation.guest_id, final_whatsapp_msg: finalMessage });
+      } else {
+        results.push({ guest_id: relation.guest_id, message: 'Create WhatsApp msg format first' });
+      }
+    }
+
+    res.json({ success: true, message: 'WhatsApp messages fetched', data: results });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching WhatsApp messages', error: error.message });
+  }
+};
+
 // controllers/invitationController.js
 // export const sendInvitation = async (req, res) => {
 //   try {

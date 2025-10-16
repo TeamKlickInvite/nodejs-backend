@@ -8,7 +8,7 @@ import { uploadTemplateAsset,SaveTemplateAsset } from "../middlewares/uploadTemp
  import { saveCustomization} from "../controllers/NewTemplate.controller.js"
  import { addGuest,updateGuest,deleteGuest,getGuestsByHost} from "../controllers/GuestBook.controller.js"
 import { createGroup,getGroupsByOrder,getGroupById,addEventToGroup,getGroupsByEvent,removeEventFromGroup,updateGroup,getGroupEvents,deleteGroup} from "../controllers/GuestGroup.controller.js";
-import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveGuestToNewGroup,getAvailableGuestsByOrder,removeGuestFromGroup,openInvite} from '../controllers/GuestGroupRelation.controller.js'
+import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveGuestToNewGroup,getAvailableGuestsByOrder,removeGuestFromGroup,openInvite,getWhatsappMsgForInvitedGuests} from '../controllers/GuestGroupRelation.controller.js'
 import {checkFrappeAuth} from '../middlewares/checkFrappeAuth.js'
 import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat,getMsgFormatsByGroup,getWhatsappMsgForGroup } from "../controllers/CustomMsgFormat.controller.js";
 import { submitRSVP } from "../controllers/Rsvp.controller.js";
@@ -45,6 +45,7 @@ router.get("/getHostGroupGuests/:group_id",checkFrappeAuth,getHostGroupGuests)
 router.get("/invitedGuest/:order_id",checkFrappeAuth,invitedGuest)
 router.post("/moveGuestToNewGroup",checkFrappeAuth,moveGuestToNewGroup)
 router.get("/getAvailableGuestsByOrder/:host_id/:order_id",checkFrappeAuth,getAvailableGuestsByOrder)
+router.get("/getWhatsappMsgForInvitedGuests/:order_id",getWhatsappMsgForInvitedGuests)
 
 // Msg FOrmate Api
 router.post("/createMsgFormat",checkFrappeAuth,createMsgFormat)
