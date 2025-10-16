@@ -364,7 +364,7 @@ export const sendInvitation = async (req, res, next) => {
             // No custom message: use a meaningful fallback
             const name = guest.displayName || guest.name || 'Guest';
             // (Optionally fetch event/order name using relation.order_id if needed here)
-            finalMessage = `Hello ${name}, you are invited! Please view your invitation here: ${relation.uniqueUrl}`;
+            finalMessage = `Hello ${name}, you are invited! Please view your invitation here: ${relation.inviteUrl}`;
           }
 
           // Replace placeholders in message (e.g. {{guest_name}}, {{guest_url}})

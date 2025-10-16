@@ -9,8 +9,8 @@ const CustomMsgFormatSchema = new Schema(
     order_id: { type: String, required: true },
     group_id: { type: Schema.Types.ObjectId, ref: "Group", required: true },
 
-    msg_medium: { type: Number, enum: [0, 1,2,3], required: true }, 
-    // 0 = SMS, 1 = Email
+    msg_medium: { type: Number, enum: [0,1,2,3],default: 0 , required: true }, 
+    // 0 =default, 1 = Email, 2=SMS, 3=Whatsapp
 
     invite_type: { type: Number, enum: [0, 1, 2, 3], required: true }, 
     // 0 = preinvite, 1 = invite, 2 = reminder, 3 = thank_you_msg
