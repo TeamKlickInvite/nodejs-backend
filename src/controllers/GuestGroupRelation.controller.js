@@ -367,7 +367,7 @@ export const sendInvitation = async (req, res, next) => {
             finalMessage = `Hello ${name}, you are invited! Please view your invitation here: ${relation.inviteUrl}`;
           }
 
-          // Replace placeholders in message (e.g. {{guest_name}}, {{guest_url}})
+          // Replace placeholders message (e.g. {{guest_name}}, {{guest_url}})
           finalMessage = finalMessage
             .replace(/\{\{guest_name\}\}/g, guest.displayName || guest.name || '')
             .replace(/\{\{guest_url\}\}/g, relation.inviteUrl);
@@ -456,6 +456,91 @@ export const sendInvitation = async (req, res, next) => {
     // In production, do not expose internal error details
     res.status(500).json({ success: false, message: 'Error sending invitations' });
     // Or use `next(error)` to delegate to Express error-handling middleware
+  }
+};
+
+
+
+// controllers/msgFormatController.js (New API for Ready-Made Msg Formats for Invited Guests)
+// controllers/msgFormatController.js (Updated API with invite_type)
+
+export const getFinalMsgFormatsForInvitedGuests = async (req, res) => {
+  try {
+    const { order_id } = req.params;
+    const { invite_type = 1 } = req.query; // Default to 'invite' (1), optional parameter
+    console.log(order_id)
+    console.log(invite_type)
+
+    if (!order_id) {
+      return res.status(400).json({ success: false, message: 'order_id is required' });
+    }
+
+    if (![0, 1, 2, 3].includes(Number(invite_type))) {
+      return res.status(400).json({ success: false, message: 'Invalid invite_type. Use 0 (preinvite), 1 (invite), 2 (reminder), or 3 (thank_you_msg)' });
+    }
+
+    // Fetch all relations for the order
+    const relations = await GuestGroupRelation.find({ order_id });
+    console.log(relations)
+    if (!relations.length) {
+      return res.status(404).json({ success: false, message: 'No invited guests found for this order' });
+    }
+
+    const results = [];
+    for (const relation of relations) {
+      const guest = await Guest.findById(relation.guest_id)
+      if (!guest) {
+        results.push({ guest_id: relation.guest_id, message: 'Guest not found' });
+        continue;
+      }
+      console.log(guest)
+
+      const guestName = guest.displayName||guest.name || 'Guest';
+      const uniqueUrl = relation.inviteUrl;
+      console.log(guestName)
+      console.log(uniqueUrl)
+
+      // Fetch custom msg formats for the group and specific invite_type
+      const customMsgs = await CustomMsgFormatModels.find({
+        order_id,
+        group_id: relation.group_id,
+        invite_type: Number(invite_type)
+      })
+
+      const whatsappMsg = customMsgs.find(msg => msg.msg_medium === 3);
+      const smsMsg = customMsgs.find(msg => msg.msg_medium === 2);
+      const emailMsg = customMsgs.find(msg => msg.msg_medium === 1);
+      let finalMessage = '';
+            if (emailMsg && emailMsg.msg_text) {
+              finalMessage = emailMsg.msg_text
+                           .replace(/\{\{guest_name\}\}/g, guest.displayName || guest.name || '')
+                           .replace(/\{\{guest_url\}\}/g, relation.uniqueUrl);
+           } else {
+                finalMessage = `Dear ${guestName}, you are invited! Please view your invitation here: ${relation.uniqueUrl}`;
+                }
+      const finalHTML = invitationEmailTemplate(guestName, finalMessage, uniqueUrl);
+
+      const guestResult = {
+        guest_id: relation.guest_id,
+        guest_name: guestName,
+        group_id: relation.group_id.toString(),
+        unique_url: uniqueUrl,
+        whatsapp: whatsappMsg ? whatsappMsg.msg_text
+          .replace(/\{\{guest_name\}\}/g, guestName)
+          .replace(/\{\{guest_url\}\}/g, uniqueUrl) : 'Create WhatsApp msg format first',
+        sms: smsMsg ? smsMsg.msg_text
+          .replace(/\{\{guest_name\}\}/g, guestName)
+          .replace(/\{\{guest_url\}\}/g, uniqueUrl) : 'Create SMS msg format first',
+        email: finalHTML ? finalHTML: 'Create Email msg format first',
+        invite_type: Number(invite_type) // Include invite_type in response for clarity
+      };
+
+      results.push(guestResult);
+    }
+
+    res.json({ success: true, message: 'Final msg formats fetched', data: results });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching final msg formats', error: error.message });
   }
 };
 
