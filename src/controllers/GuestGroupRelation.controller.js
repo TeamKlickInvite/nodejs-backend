@@ -13,6 +13,7 @@ import nodemailer from 'nodemailer';
 export const addGuestsToGroup = async (req, res) => {
   try {
     const { guest_ids, group_id, order_id} = req.body;
+    
 
     // 1) Basic validation
     if (!Array.isArray(guest_ids) || guest_ids.length === 0) {
@@ -298,8 +299,6 @@ export const moveGuestToNewGroup = async (req, res) => {
   }
 };
 // controllers/invitationController.js
-
-
 const twilioClient = twilio(process.env.YOUR_TWILIO_ACCOUNT_SID, process.env.YOUR_TWILIO_AUTH_TOKEN);
 const transporter = nodemailer.createTransport({
   service: 'gmail',

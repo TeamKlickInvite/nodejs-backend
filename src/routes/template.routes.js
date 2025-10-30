@@ -11,7 +11,7 @@ import { createGroup,getGroupsByOrder,getGroupById,addEventToGroup,getGroupsByEv
 import {addGuestsToGroup,getHostGroupGuests,sendInvitation,invitedGuest,moveGuestToNewGroup,getAvailableGuestsByOrder,removeGuestFromGroup,openInvite,getWhatsappMsgForInvitedGuests,getFinalMsgFormatsForInvitedGuests} from '../controllers/GuestGroupRelation.controller.js'
 import {checkFrappeAuth} from '../middlewares/checkFrappeAuth.js'
 import { createMsgFormat,updateMsgFormat,getMsgFormatsByOrder,deleteMsgFormat,getMsgFormatsByGroup,getWhatsappMsgForGroup } from "../controllers/CustomMsgFormat.controller.js";
-import { submitRSVP } from "../controllers/Rsvp.controller.js";
+import { submitRsvp } from "../controllers/Rsvp.controller.js";
 
 
 const router = Router();
@@ -63,6 +63,6 @@ router.get("/getGroupById/:id",checkFrappeAuth,getGroupById)
 router.get("/openInvite/:uniqueCode",openInvite)
 
 // RSVP API
-router.post("/submitRSVP",checkFrappeAuth,submitRSVP)
+router.post("/submitRsvp/:uniqueCode",submitRsvp)
 
 export default router

@@ -1,38 +1,40 @@
-// models/RSVP.js
+// models/Rsvp.js
 import mongoose from "mongoose";
 
 const { Schema, model, models } = mongoose;
 
-const RSVPSchema = new Schema(
+const RsvpSchema = new Schema(
   {
-    guest_id: { type: Schema.Types.ObjectId, ref: "Guest", required: true },
-    group_id: { type: Schema.Types.ObjectId, ref: "Group", required: true },
-
-    // ❌ Old (ObjectId): order_id: { type: Schema.Types.ObjectId, ref: 'Order', required: true }
-    // ✅ New (String - because Frappe manages it)
-    order_id: { type: String, required: true },
-
-    // ❌ Old: event_id: { type: Schema.Types.ObjectId, required: true }
-    // ✅ New (String)
-    event_id: { type: String, required: true },
-
-    response: {
-      type: String,
-      enum: ["attending", "not_attending", "maybe"],
+    // Link to the exact invitation the guest received
+    relation_id: {
+      type: Schema.Types.ObjectId,
+      ref: "GuestGroupRelation",
       required: true,
+      unique: true,               // one RSVP per invitation
     },
 
-    details: { type: Object },
+    // Core RSVP fields (mirrors old MySQL)
+    rsvp_status: {
+      type: String,
+      enum: ["pending", "yes", "no", "maybe"],
+      default: "pending",
+    },
 
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
+    // plus_one: { type: Boolean, default: false },
+    plus_one_name: { type: String, trim: true },
+
+    comments: { type: String, trim: true },
+
+    // Which events of the group the guest is attending
+    attending_events: [{ type: String}],
+
+    // Timestamps
+    responded_at: { type: Date },
   },
-  {
-    timestamps: true, // this auto-handles createdAt & updatedAt
-  }
+  { timestamps: true }
 );
 
-// Unique RSVP per guest per event + order
-RSVPSchema.index({ order_id: 1, guest_id: 1, event_id: 1 }, { unique: true });
+// Index for fast lookup by relation_id
+// RsvpSchema.index({ relation_id: 1 });
 
-export default models.RSVP || model("RSVP", RSVPSchema);
+export default models.Rsvp || model("Rsvp", RsvpSchema);

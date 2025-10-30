@@ -1,143 +1,179 @@
-// controllers/rsvpController.js
-import mongoose from 'mongoose';
-import RSVP from '../models/Rsvp.models.js';
+import GuestGroupRelation from "../models/GuestGroupRelation.models.js"
+import {Guest} from "../models/GuestBook.models.js"
+import Group from "../models/GuestGroup.models.js"
+import Rsvp from "../models/Rsvp.models.js"
 
-/** ---------------------------
- * Helper Functions
- * --------------------------- */
-const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
-
-const sendResponse = (res, statusCode, success, message, data = null, error = null) => {
-  return res.status(statusCode).json({
-    success,
-    message,
-    ...(data && { data }),
-    ...(error && { error })
-  });
-};
-
-/** ---------------------------
- * @desc Submit RSVP
- * @route POST /api/rsvp
- * @access Public/Guest
- * --------------------------- */
-export const submitRSVP = async (req, res) => {
+/* ------------------------------------------------------------------
+   POST /rsvp/:
+uniqueCode
+   Body:
+   {
+     "rsvp_status": "yes",          // yes | no | maybe
+     "plus_one": true,
+     "plus_one_name": "Jane Doe",
+     "comments": "Looking forward!",
+     "attending_events": ["event1", "event2"]
+   }
+   ------------------------------------------------------------------ */
+export const submitRsvp = async (req, res) => {
   try {
-    const { guest_id, group_id, order_id, event_id, response, details } = req.body;
+    const { uniqueCode } = req.params;
+    const {
+      rsvp_status = "pending",
+      // plus_one = false,
+      plus_one_name = "",
+      comments = "",
+      attending_events = [],
+    } = req.body;
 
-    // Required fields check
-    if (!guest_id || !group_id || !order_id || !event_id || !response) {
-      return sendResponse(res, 400, false, 'Missing required fields');
+    // 1️⃣ Validate invite link
+    const relation = await GuestGroupRelation.findOne({ uniqueCode });
+    if (!relation) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Invalid invitation link" });
     }
 
-    // ObjectId validation
-    if (![guest_id, group_id].every(isValidObjectId)) {
-      return sendResponse(res, 400, false, 'Invalid guest_id or group_id format');
+    // 2️⃣ Validate RSVP status
+    const validStatus = ["yes", "no", "maybe", "pending"];
+    if (!validStatus.includes(rsvp_status)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid rsvp_status value" });
     }
 
-    // Order & Event come from Frappe => treat as plain string/UUID
-    if (typeof order_id !== 'string' || typeof event_id !== 'string') {
-      return sendResponse(res, 400, false, 'order_id and event_id must be strings');
+    // 3️⃣ Fetch guest & group info
+    const [guest, group] = await Promise.all([
+      Guest.findById(relation.guest_id).select("name displayName"),
+      Group.findById(relation.group_id).select("name order_id events"),
+    ]);
+
+    // 4️⃣ Create or update RSVP
+    let rsvp = await Rsvp.findOne({ relation_id: relation._id });
+
+    if (rsvp) {
+      // Update existing RSVP
+      rsvp.rsvp_status = rsvp_status;
+      // rsvp.plus_one = plus_one;
+      rsvp.plus_one_name = plus_one_name;
+      rsvp.comments = comments;
+      rsvp.attending_events = attending_events;
+      rsvp.responded_at = new Date();
+    } else {
+      // Create new RSVP entry
+      rsvp = new Rsvp({
+        relation_id: relation._id,
+        rsvp_status,
+        // plus_one,
+        plus_one_name,
+        comments,
+        attending_events,
+        responded_at: new Date(),
+      });
     }
 
-    // Response validation
-    const allowedResponses = ['attending', 'not_attending', 'maybe'];
-    if (!allowedResponses.includes(response)) {
-      return sendResponse(res, 400, false, `Invalid response. Allowed: ${allowedResponses.join(', ')}`);
-    }
+    await rsvp.save();
 
-    // UPSERT logic (update if exists, otherwise insert)
-    const rsvp = await RSVP.findOneAndUpdate(
-      { guest_id, order_id, event_id },
-      {
-        group_id,
-        response,
-        details: details || {},
-        updatedAt: new Date()
-      },
-      { new: true, upsert: true, runValidators: true }
+    // 5️⃣ Update invite status in relation
+    await GuestGroupRelation.updateOne(
+      { _id: relation._id },
+      { $set: { "inviteStatus.invite.status": 3 } } // 3 = responded
     );
 
-    return sendResponse(res, 201, true, 'RSVP submitted successfully', rsvp);
-  } catch (error) {
-    console.error('RSVP Submit Error:', error);
-    return sendResponse(res, 500, false, 'Internal server error', null, error.message);
+    // 6️⃣ Send response
+    return res.status(200).json({
+      success: true,
+      message: "RSVP recorded successfully",
+      data: {
+        rsvp_id: rsvp._id,
+        guest: {
+          id: guest?._id,
+          name: guest?.name,
+          displayName: guest?.displayName || guest?.name,
+        },
+        group: {
+          id: group?._id,
+          name: group?.name,
+          order_id: group?.order_id,
+        },
+        rsvp: {
+          status: rsvp.rsvp_status,
+          // plus_one: rsvp.plus_one,
+          plus_one_name: rsvp.plus_one_name,
+          comments: rsvp.comments,
+          attending_events: rsvp.attending_events,
+          responded_at: rsvp.responded_at,
+        },
+      },
+    });
+  } catch (err) {
+    console.error("RSVP Submit Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while saving RSVP",
+      error: err.message,
+    });
   }
 };
 
-/** ---------------------------
- * @desc Get RSVPs by Order
- * @route GET /api/rsvp/order/:order_id
- * @access Admin/Event Owner
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * --------------------------- */
-export const getRSVPsByOrder = async (req, res) => {
+/* ------------------------------------------------------------------
+   GET /rsvp/:
+uniqueCode
+   Guest can view their current RSVP status
+   ------------------------------------------------------------------ */
+export const getRsvp = async (req, res) => {
   try {
-    const { order_id } = req.params;
+    const { 
+uniqueCode } = req.params;
 
-    if (!order_id || typeof order_id !== 'string') {
-      return sendResponse(res, 400, false, 'Invalid order_id');
+    // 1️⃣ Validate relation
+    const relation = await GuestGroupRelation.findOne({ 
+uniqueCode });
+    if (!relation) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Invalid invitation link" });
     }
 
-    const rsvps = await RSVP.find({ order_id })
-      .populate('guest_id', 'name contacts')
-      .lean();
+    // 2️⃣ Fetch RSVP + related info
+    const [rsvp, guest, group] = await Promise.all([
+      Rsvp.findOne({ relation_id: relation._id }).populate(
+        "attending_events",
+        "event_name"
+      ),
+      Guest.findById(relation.guest_id).select("name displayName"),
+      Group.findById(relation.group_id).select("name order_id"),
+    ]);
 
-    if (!rsvps.length) {
-      return sendResponse(res, 404, false, 'No RSVPs found for this order');
-    }
-
-    return sendResponse(res, 200, true, 'RSVPs fetched successfully', rsvps);
-  } catch (error) {
-    console.error('Get RSVPs By Order Error:', error);
-    return sendResponse(res, 500, false, 'Internal server error', null, error.message);
-  }
-};
-
-/** ---------------------------
- * @desc Get RSVPs by Guest
- * @route GET /api/rsvp/guest/:guest_id
- * @access Public/Guest
- * --------------------------- */
-export const getRSVPsByGuest = async (req, res) => {
-  try {
-    const { guest_id } = req.params;
-
-    if (!isValidObjectId(guest_id)) {
-      return sendResponse(res, 400, false, 'Invalid guest_id');
-    }
-
-    const rsvps = await RSVP.find({ guest_id }).lean();
-
-    if (!rsvps.length) {
-      return sendResponse(res, 404, false, 'No RSVPs found for this guest');
-    }
-
-    return sendResponse(res, 200, true, 'RSVPs fetched successfully', rsvps);
-  } catch (error) {
-    console.error('Get RSVPs By Guest Error:', error);
-    return sendResponse(res, 500, false, 'Internal server error', null, error.message);
+    // 3️⃣ Prepare response
+    return res.status(200).json({
+      success: true,
+      message: "RSVP details fetched successfully",
+      data: {
+        guest: {
+          id: guest?._id,
+          name: guest?.name,
+          displayName: guest?.displayName || guest?.name,
+        },
+        group: {
+          id: group?._id,
+          name: group?.name,
+          order_id: group?.order_id,
+        },
+        rsvp: rsvp || {
+          status: "pending",
+          plus_one: false,
+          comments: "",
+          attending_events: [],
+        },
+      },
+    });
+  } catch (err) {
+    console.error("RSVP Fetch Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching RSVP",
+      error: err.message,
+    });
   }
 };
