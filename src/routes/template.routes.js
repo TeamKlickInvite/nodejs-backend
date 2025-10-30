@@ -63,6 +63,6 @@ router.get("/getGroupById/:id",checkFrappeAuth,getGroupById)
 router.get("/openInvite/:uniqueCode",openInvite)
 
 // RSVP API
-router.post("/submitRsvp/:uniqueCode",submitRsvp)
+router.post("/submitRsvp/:uniqueCode",checkFrappeAuth,submitRsvp)
 
 export default router

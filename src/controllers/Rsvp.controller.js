@@ -3,18 +3,6 @@ import {Guest} from "../models/GuestBook.models.js"
 import Group from "../models/GuestGroup.models.js"
 import Rsvp from "../models/Rsvp.models.js"
 
-/* ------------------------------------------------------------------
-   POST /rsvp/:
-uniqueCode
-   Body:
-   {
-     "rsvp_status": "yes",          // yes | no | maybe
-     "plus_one": true,
-     "plus_one_name": "Jane Doe",
-     "comments": "Looking forward!",
-     "attending_events": ["event1", "event2"]
-   }
-   ------------------------------------------------------------------ */
 export const submitRsvp = async (req, res) => {
   try {
     const { uniqueCode } = req.params;
@@ -123,12 +111,10 @@ uniqueCode
    ------------------------------------------------------------------ */
 export const getRsvp = async (req, res) => {
   try {
-    const { 
-uniqueCode } = req.params;
+    const { uniqueCode } = req.params;
 
     // 1️⃣ Validate relation
-    const relation = await GuestGroupRelation.findOne({ 
-uniqueCode });
+    const relation = await GuestGroupRelation.findOne({ uniqueCode });
     if (!relation) {
       return res
         .status(404)
