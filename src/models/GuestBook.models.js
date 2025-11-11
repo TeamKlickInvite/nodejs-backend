@@ -12,9 +12,17 @@ const contactSchema = new mongoose.Schema(
       required: [true, "Contact value is required"],
       trim: true,
     },
+    countryCode: {
+      type: String,
+      trim: true,
+      default: "+91", // 🇮🇳 default India (you can change)
+    },
     isDomestic: {
       type: Boolean,
-      default: true,
+      default: function () {
+        // ✅ Only apply to mobile numbers
+        return this.type === "mobile" && this.countryCode === "+91";
+      },
     },
   },
   { _id: false } // ✅ don’t generate separate _id for each contact
