@@ -39,7 +39,7 @@ const RsvpSchema = new Schema(
 );
 
 // 🔍 Optional: useful for analytics and faster lookup
- RsvpSchema.index({ relation_id: 1 });
+//  RsvpSchema.index({ relation_id: 1 });
 
 export default models.Rsvp || model("Rsvp", RsvpSchema);
  

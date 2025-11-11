@@ -44,8 +44,8 @@ export const submitRsvp = async (req, res) => {
       Object.assign(rsvp, {
         rsvp_status,
         comments,
-        attending_events,
         numberOfGuests,
+        attending_events,
         customAnswers,
         responded_at: new Date(),
       });
