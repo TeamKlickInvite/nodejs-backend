@@ -151,7 +151,7 @@ export const getHostGroupGuests = async (req, res) => {
           as: "guest"
         }
       },
-      { $unwind: "$guest" },
+      { $unwind: "$guest" }, 
       {
         $project: {
           group_id: 1,

@@ -1,40 +1,45 @@
 // models/Rsvp.js
 import mongoose from "mongoose";
-
 const { Schema, model, models } = mongoose;
 
 const RsvpSchema = new Schema(
   {
-    // Link to the exact invitation the guest received
+    // 1️⃣ One RSVP per GuestGroupRelation
     relation_id: {
       type: Schema.Types.ObjectId,
       ref: "GuestGroupRelation",
       required: true,
-      unique: true,               // one RSVP per invitation
+      unique: true,
     },
 
-    // Core RSVP fields (mirrors old MySQL)
+    // 2️⃣ RSVP core status
     rsvp_status: {
       type: String,
       enum: ["pending", "yes", "no", "maybe"],
       default: "pending",
     },
 
-    // plus_one: { type: Boolean, default: false },
-    plus_one_name: { type: String, trim: true },
+    // 3️⃣ Dynamic RSVP answers
+    customAnswers: {
+      type: Map,
+      of: String, // Example: {"food_choice": "Veg", "plus_one_name": "Ravi"}
+    },
 
+    // 4️⃣ Guests and comments
+    numberOfGuests: { type: Number, default: 1 },
     comments: { type: String, trim: true },
 
-    // Which events of the group the guest is attending
-    attending_events: [{ type: String}],
+    // 5️⃣ Attending event list (like “Reception”, “Ceremony”)
+    attending_events: [{ type: String }],
 
-    // Timestamps
+    // 6️⃣ Timestamp when RSVP submitted
     responded_at: { type: Date },
   },
   { timestamps: true }
 );
 
-// Index for fast lookup by relation_id
-// RsvpSchema.index({ relation_id: 1 });
+// 🔍 Optional: useful for analytics and faster lookup
+ RsvpSchema.index({ relation_id: 1 });
 
 export default models.Rsvp || model("Rsvp", RsvpSchema);
+ 

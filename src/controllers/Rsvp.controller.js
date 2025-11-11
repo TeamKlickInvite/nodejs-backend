@@ -8,29 +8,29 @@ export const submitRsvp = async (req, res) => {
     const { uniqueCode } = req.params;
     const {
       rsvp_status = "pending",
-      // plus_one = false,
-      plus_one_name = "",
       comments = "",
       attending_events = [],
+      numberOfGuests = 1,
+      customAnswers = {},
     } = req.body;
 
-    // 1️⃣ Validate invite link
+    // 1️⃣ Validate invitation link
     const relation = await GuestGroupRelation.findOne({ uniqueCode });
-    if (!relation) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Invalid invitation link" });
-    }
+    if (!relation)
+      return res.status(404).json({
+        success: false,
+        message: "Invalid invitation link",
+      });
 
     // 2️⃣ Validate RSVP status
     const validStatus = ["yes", "no", "maybe", "pending"];
-    if (!validStatus.includes(rsvp_status)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid rsvp_status value" });
-    }
+    if (!validStatus.includes(rsvp_status))
+      return res.status(400).json({
+        success: false,
+        message: "Invalid rsvp_status value",
+      });
 
-    // 3️⃣ Fetch guest & group info
+    // 3️⃣ Fetch guest & group info (in parallel)
     const [guest, group] = await Promise.all([
       Guest.findById(relation.guest_id).select("name displayName"),
       Group.findById(relation.group_id).select("name order_id events"),
@@ -40,35 +40,37 @@ export const submitRsvp = async (req, res) => {
     let rsvp = await Rsvp.findOne({ relation_id: relation._id });
 
     if (rsvp) {
-      // Update existing RSVP
-      rsvp.rsvp_status = rsvp_status;
-      // rsvp.plus_one = plus_one;
-      rsvp.plus_one_name = plus_one_name;
-      rsvp.comments = comments;
-      rsvp.attending_events = attending_events;
-      rsvp.responded_at = new Date();
+      // update
+      Object.assign(rsvp, {
+        rsvp_status,
+        comments,
+        attending_events,
+        numberOfGuests,
+        customAnswers,
+        responded_at: new Date(),
+      });
     } else {
-      // Create new RSVP entry
+      // create
       rsvp = new Rsvp({
         relation_id: relation._id,
         rsvp_status,
-        // plus_one,
-        plus_one_name,
         comments,
         attending_events,
+        numberOfGuests,
+        customAnswers,
         responded_at: new Date(),
       });
     }
 
     await rsvp.save();
 
-    // 5️⃣ Update invite status in relation
+    // 5️⃣ Update invite status
     await GuestGroupRelation.updateOne(
       { _id: relation._id },
       { $set: { "inviteStatus.invite.status": 3 } } // 3 = responded
     );
 
-    // 6️⃣ Send response
+    // 6️⃣ Respond with success JSON
     return res.status(200).json({
       success: true,
       message: "RSVP recorded successfully",
@@ -76,8 +78,7 @@ export const submitRsvp = async (req, res) => {
         rsvp_id: rsvp._id,
         guest: {
           id: guest?._id,
-          name: guest?.name,
-          displayName: guest?.displayName || guest?.name,
+          name: guest?.displayName || guest?.name,
         },
         group: {
           id: group?._id,
@@ -86,11 +87,11 @@ export const submitRsvp = async (req, res) => {
         },
         rsvp: {
           status: rsvp.rsvp_status,
-          // plus_one: rsvp.plus_one,
-          plus_one_name: rsvp.plus_one_name,
           comments: rsvp.comments,
           attending_events: rsvp.attending_events,
+          numberOfGuests: rsvp.numberOfGuests,
           responded_at: rsvp.responded_at,
+          customAnswers: rsvp.customAnswers
         },
       },
     });
@@ -103,7 +104,6 @@ export const submitRsvp = async (req, res) => {
     });
   }
 };
-
 /* ------------------------------------------------------------------
    GET /rsvp/:
 uniqueCode
